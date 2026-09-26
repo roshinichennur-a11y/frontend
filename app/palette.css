@@ -32,7 +32,10 @@
   --palette-mist: #d8bfd7;
   --palette-cloud: #f8e7f3;
 }
-body { background: #fff8fc; color: #171017; }
+body {
+  background: #fff8fc url("./network-pattern.svg") repeat;
+  color: #171017;
+}
 .sidebar { background: white; border-color: #e3cbdc; box-shadow: 0 4px 18px #4c243b06; }
 .topbar { background: #fff8fc; }
 .brand,.workspace-label,.user-profile,.page-intro h1,.page-intro h1 span,.subpage-heading h1 { color: #171017; }
