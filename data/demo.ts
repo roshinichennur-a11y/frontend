@@ -46,6 +46,7 @@ export const expert: Expert = {
   initials: "MP",
   specialty: "Oncology",
   expertise: ["Breast cancer", "Treatment sequencing", "Clinical trials"],
+  credentials: ["MD — illustrative qualification", "Medical oncology — illustrative specialty training", "Breast cancer evidence review — sample focus area"],
   match: 94,
   demo: true,
 };
@@ -86,11 +87,12 @@ export function completeHuddle(huddle: Huddle, response: string): Huddle {
         : [
             "No curated evidence matches this question in the sample collection. Evidence review remains incomplete.",
           ],
-      takeaways: [
-        "Keep the original question and missing clinical context visible.",
-        "Review source material directly and check its currency.",
-        "Treat the simulated expert response as a discussion prompt, not a recommendation.",
-      ],
+      takeaways: huddle.sources.length ? [
+        `Prepare your ${huddle.question.topic.toLowerCase()} discussion using the NCI Breast Cancer Treatment (PDQ) reference. Check the current page for the evidence relevant to your question; this brief does not extract treatment recommendations.`,
+        `For your stated intent, “${huddle.question.intent},” use the NCI clinical trials resource to prepare questions about research participation. Trial eligibility and availability require confirmation with the study team.`,
+        `Use the NCI professional breast cancer resource as background for your ${huddle.question.condition.toLowerCase()} question. Ask the expert to distinguish what the sources address from what still needs clarification.`,
+      ] : [`No reference in this sample collection supports a takeaway about ${huddle.question.topic.toLowerCase()}. Obtain relevant evidence before drawing conclusions.`],
+      takeawaySourceIds: huddle.sources.length ? [["nci-pdq"], ["nci-trials"], ["nci-breast"]] : [[]],
       uncertainty:
         "Patient-specific context, source applicability, and the latest treatment updates have not been assessed. This prototype cannot determine a clinical course of action.",
     },

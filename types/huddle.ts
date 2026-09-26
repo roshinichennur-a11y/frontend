@@ -27,12 +27,14 @@ export const ExpertSchema = z.object({
   initials: z.string(),
   specialty: z.string(),
   expertise: z.array(z.string()),
+  credentials: z.array(z.string()).optional(),
   match: z.number().min(0).max(100),
   demo: z.boolean(),
 });
 export const BriefSchema = z.object({
   evidence: z.array(z.string()),
   takeaways: z.array(z.string()),
+  takeawaySourceIds: z.array(z.array(z.string())).optional(),
   uncertainty: z.string(),
   synthesisLabel: z.string(),
 });

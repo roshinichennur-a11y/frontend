@@ -1,23 +1,28 @@
 "use client";
-import { useState } from "react";
 import { ArrowRight, Mic, Square, Sparkles } from "lucide-react";
 import type { Huddle } from "@/types/huddle";
 import { EXAMPLE_RESPONSE } from "@/data/demo";
 import { useVoice } from "@/hooks/useVoice";
 import { EvidenceList, LoadingState } from "./ui";
+import { ExpertDetails } from "./ExpertDetails";
 
 export function ExpertResponse({
   huddle,
   busy,
   onSubmit,
+  draft,
+  onDraftChange,
 }: {
   huddle: Huddle;
   busy: boolean;
+  draft: string;
+  onDraftChange: (text: string) => void;
   onSubmit: (text: string) => void;
 }) {
-  const [response, setResponse] = useState(huddle.response || "");
+  const response = draft;
+  const setResponse = onDraftChange;
   const voice = useVoice((text) =>
-    setResponse((old) => `${old} ${text}`.trim().slice(0, 4000)),
+    setResponse(`${response} ${text}`.trim().slice(0, 4000)),
   );
   return (
     <div className="two-column expert-layout">
@@ -44,6 +49,7 @@ export function ExpertResponse({
             </p>
           </div>
         </div>
+        <ExpertDetails huddle={huddle} />
         <h2>Your perspective matters.</h2>
         <p className="muted">
           Add context, call out uncertainty, and help focus the next

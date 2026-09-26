@@ -1,0 +1,56 @@
+import { test, expect } from "@playwright/test";
+test("session graph follows submitted, answered and reclassified questions", async ({ page }) => {
+  const graph = () => page.getByRole("button", { name: "Question Graph", exact: true }).click();
+  await page.goto("/");
+  await graph();
+  await expect(page.getByTestId("graph-total")).toHaveText("2");
+  await expect(page.getByTestId("graph-unanswered")).toHaveText("1");
+  await page.getByRole("button", { name: "New huddle", exact: true }).click();
+  await page.getByRole("button", { name: /Try a sample question/ }).click();
+  await page.getByRole("button", { name: "Start huddle", exact: true }).click();
+  await page.getByRole("button", { name: "Confirm context" }).click();
+  await graph();
+  await expect(page.getByTestId("graph-total")).toHaveText("3");
+  await expect(page.getByTestId("graph-unanswered")).toHaveText("2");
+  await expect(page.getByRole("region", { name: "Question topic graph" })).toBeVisible();
+  await page.locator(".live-question-chart .recharts-bar-rectangle path").last().click();
+  await expect(page.getByRole("region", { name: "Topic questions" }).getByRole("heading", { level: 2 })).toHaveText("Side-effect management");
+  await page.getByRole("button", { name: /Treatment sequencing 2 questions/ }).click();
+  const detail = page.getByRole("region", { name: "Topic questions" });
+  await expect(detail.getByRole("heading", { level: 3 })).toHaveCount(2);
+  await page.getByLabel("Show unanswered only").check();
+  await expect(detail.getByRole("heading", { level: 3 })).toHaveCount(1);
+  await detail.getByRole("button", { name: "Open huddle" }).click();
+  await page.getByRole("button", { name: "Request huddle", exact: true }).click();
+  await page.getByRole("button", { name: "Use simulated response" }).click();
+  await page.getByRole("button", { name: "Create huddle brief" }).click();
+  await graph();
+  await expect(page.getByTestId("graph-total")).toHaveText("3");
+  await expect(page.getByTestId("graph-unanswered")).toHaveText("1");
+  await page.getByRole("button", { name: /Treatment sequencing 2 questions/ }).click();
+  await page.getByLabel("Show unanswered only").check();
+  await expect(detail).toContainText("No unanswered questions in this topic.");
+  await page.getByLabel("Show unanswered only").uncheck();
+  await detail.getByRole("button", { name: "Open brief" }).first().click();
+  await page.getByRole("button", { name: "Question", exact: true }).click();
+  await page.getByLabel("Topic", { exact: true }).fill("Clinical trials");
+  await page.getByRole("button", { name: "Confirm context" }).click();
+  await graph();
+  await expect(page.getByTestId("graph-unanswered")).toHaveText("2");
+  await expect(page.getByRole("button", { name: /Clinical trials 1 question/ })).toBeVisible();
+  await page.reload();
+  await graph();
+  await expect(page.getByTestId("graph-total")).toHaveText("3");
+  await expect(page.getByTestId("graph-unanswered")).toHaveText("2");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test("empty session has no invented graph counts", async ({ page }) => {
+  await page.addInitScript(() => sessionStorage.setItem("pulsepoint-demo-v1", "[]"));
+  await page.goto("/");
+  await page.getByRole("button", { name: "Question Graph", exact: true }).click();
+  await expect(page.getByTestId("graph-total")).toHaveText("0");
+  await expect(page.getByTestId("graph-unanswered")).toHaveText("0");
+  await expect(page.getByText("No questions yet", { exact: true })).toBeVisible();
+});
+

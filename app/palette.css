@@ -129,3 +129,49 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .edit-huddle-dialog textarea { width: 100%; border: 1px solid #ac7b84; border-radius: 6px; padding: 12px; color: #171017; background: #fff; font-size: 14px; line-height: 1.7; }
 .edit-huddle-dialog blockquote { margin: 18px 0; padding: 13px; background: #fff0f8; color: #4c243b; border-left: 3px solid #b84a62; }
 .flow-steps li::before,.flow-steps li::after { content: none !important; display: none !important; }
+.flow-steps.simple-steps li { padding: 0; }
+.flow-steps button { padding: 10px 15px; border: 1px solid #ac7b84; border-radius: 9px; background: white; color: #4c243b; font: inherit; font-weight: 700; cursor: pointer; }
+.flow-steps button[aria-current="step"] { background: #54457f; color: white; border-color: #54457f; }
+.flow-steps button:hover:not(:disabled) { background: #fbe3f7; color: #4c243b; }
+.flow-steps button:disabled { opacity: .6; cursor: not-allowed; }
+.flow-steps button:focus-visible, .breadcrumb button:focus-visible { outline: 3px solid #b84a62; outline-offset: 3px; }
+.breadcrumb { flex-wrap: wrap; }
+.breadcrumb button { border: 0; background: transparent; color: #54457f; font: inherit; font-weight: 700; cursor: pointer; padding: 2px; }
+.extraction-item input { display: block; width: 100%; min-width: 0; margin-top: 10px; padding: 12px; border: 1px solid #ac7b84; border-radius: 8px; background: white; color: #161019; font: inherit; font-weight: 600; }
+.expert-details { text-align: left; margin: 20px 0; padding: 18px; background: #fcf0f9; border: 1px solid #ac7b84; border-radius: 12px; color: #281823; }
+.expert-details h3, .expert-details h4 { margin: 0 0 8px; }
+.expert-details p { margin: 0 0 14px; }
+.expert-details ul { padding-left: 20px; list-style: disc; margin-bottom: 14px; }
+.takeaways li > div { min-width: 0; }
+.takeaways li p { margin: 0 0 10px; }
+.takeaways li small { display: block; margin-top: 8px; }
+.inline-citations a { overflow-wrap: anywhere; }
+@media (max-width: 700px) { .flow-steps { flex-wrap: wrap; gap: 8px; } .flow-steps button { padding: 9px 12px; } .breadcrumb { font-size: 12px; } }
+nav.breadcrumb { display: flex; flex-direction: row; align-items: center; gap: 6px; }
+nav.breadcrumb button { width: auto; flex: none; margin: 0; }
+html { scroll-padding-top: 90px; }
+@media (max-width: 700px) {
+  .topbar { height: auto; min-height: 80px; padding: 12px 20px; flex-wrap: wrap; gap: 10px; }
+  nav.breadcrumb { width: 100%; }
+  .topbar-actions { width: auto; }
+  html { scroll-padding-top: 130px; }
+}
+.session-graph-columns { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+.session-topic-list { display: grid; gap: 12px; margin-top: 20px; }
+.session-topic { width: 100%; text-align: left; padding: 16px; border: 1px solid #ac7b84; border-radius: 12px; background: white; color: #4c243b; cursor: pointer; }
+.session-topic:hover, .session-topic[aria-pressed="true"] { background: #fbe3f7; border-color: #54457f; }
+.session-topic[aria-pressed="true"] { box-shadow: inset 4px 0 #54457f; }
+.session-topic-heading { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.session-topic-track { display: block; height: 14px; border-radius: 7px; background: #f7eaf4; margin: 12px 0; overflow: hidden; }
+.session-topic-track > span { display: block; height: 100%; background: #b84a62; border-radius: inherit; }
+.session-topic-detail h2, .session-question-list h3 { overflow-wrap: anywhere; }
+.session-unanswered-filter { display: flex; align-items: center; gap: 10px; margin: 20px 0 12px; font-weight: 600; }
+.session-unanswered-filter input { width: 18px; height: 18px; accent-color: #54457f; }
+.session-question-list { display: grid; gap: 16px; padding: 0; list-style: none; }
+.session-question-list li { padding: 18px 0; border-top: 1px solid #ac7b84; }
+.session-question-list h3 { margin: 12px 0; font-size: 17px; line-height: 1.5; }
+.session-question-list button { margin-top: 14px; }
+@media (max-width: 900px) { .session-graph-columns { grid-template-columns: minmax(0, 1fr); } }
+.live-question-chart { margin-bottom: 28px; min-width: 0; }
+
+.live-question-chart .recharts-bar-rectangle path { fill: revert-layer; pointer-events: all; }

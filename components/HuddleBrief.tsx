@@ -11,6 +11,7 @@ import {
   Info,
 } from "lucide-react";
 import type { Huddle } from "@/types/huddle";
+import { ExpertDetails } from "./ExpertDetails";
 
 export function HuddleBrief({ huddle }: { huddle: Huddle }) {
   const [speaking, setSpeaking] = useState(false);
@@ -22,9 +23,9 @@ export function HuddleBrief({ huddle }: { huddle: Huddle }) {
     [],
   );
   if (!huddle.brief)
-    return <p>This huddle is waiting for an expert response.</p>;
+    return <section className="understanding-panel"><h2>Your brief is not ready yet</h2><p>Open Expert to add a response and create the brief. You can review Question and Evidence while you wait.</p></section>;
   const brief = huddle.brief;
-  const text = `PULSEPOINT — CLINICAL HUDDLE BRIEF\n${brief.synthesisLabel}\n\nQUESTION\n${huddle.question.question}\n\nEVIDENCE\n${brief.evidence.join("\n")}\n\nEXPERT PERSPECTIVE${huddle.expert?.demo ? " (FICTIONAL EXPERT)" : ""}\n${huddle.response}\n\nKEY TAKEAWAYS\n${brief.takeaways.map((t) => `• ${t}`).join("\n")}\n\nUNCERTAINTY\n${brief.uncertainty}\n\nSOURCES\n${huddle.sources.map((s) => `${s.title}\n${s.url}`).join("\n\n")}`;
+  const text = `PULSEPOINT — CLINICAL HUDDLE BRIEF\n${brief.synthesisLabel}\n\nQUESTION\n${huddle.question.question}\n\nEVIDENCE\n${brief.evidence.join("\n")}\n\nEXPERT PERSPECTIVE${huddle.expert?.demo ? " (FICTIONAL EXPERT)" : ""}\n${huddle.response}\n\nKEY TAKEAWAYS\n${brief.takeaways.map((t, i) => `• ${t}\n${huddle.sources.filter(s => brief.takeawaySourceIds?.[i]?.includes(s.id)).map(s => `${s.title}: ${s.url}`).join("\n")}`).join("\n")}\n\nUNCERTAINTY\n${brief.uncertainty}\n\nSOURCES\n${huddle.sources.map((s) => `${s.title}\n${s.url}`).join("\n\n")}`;
   async function copy() {
     try {
       await navigator.clipboard.writeText(text);
@@ -109,6 +110,7 @@ export function HuddleBrief({ huddle }: { huddle: Huddle }) {
             </span>
           </div>
           <blockquote>{huddle.response}</blockquote>
+          <ExpertDetails huddle={huddle} />
           <div className="expert-byline">
             <span className="avatar small-avatar">
               {huddle.expert?.initials}
@@ -131,12 +133,18 @@ export function HuddleBrief({ huddle }: { huddle: Huddle }) {
             </span>
           </div>
           <ul>
-            {brief.takeaways.map((t) => (
-              <li key={t}>
+            {brief.takeaways.map((t, index) => {
+              const references = huddle.sources.filter(source => brief.takeawaySourceIds?.[index]?.includes(source.id));
+              return <li key={`${index}-${t}`}>
                 <Check size={16} />
-                <span>{t}</span>
-              </li>
-            ))}
+                <div><p>{t}</p>
+                  <div className="inline-citations" aria-label={`References for takeaway ${index + 1}`}>
+                    {references.map(source => <a key={source.id} href={source.url} target="_blank" rel="noreferrer">{source.title}<ArrowUpRight size={12} /></a>)}
+                  </div>
+                  <small>{references.length ? (huddle.demo ? "Suggested reading for this takeaway · not a verified clinical conclusion" : "Linked evidence") : "No supporting source linked to this takeaway."}</small>
+                </div>
+              </li>;
+            })}
           </ul>
         </section>
         <section className="uncertainty">

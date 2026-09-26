@@ -81,7 +81,7 @@ export function EvidenceList({ sources }: { sources: Evidence[] }) {
     </div>
   );
 }
-export function FlowSteps({ step }: { step: number; simple?: boolean }) {
+export function FlowSteps({ step, onSelect, locked = false }: { step: number; simple?: boolean; onSelect?: (index: number) => void; locked?: boolean }) {
   return (
     <ol className="flow-steps simple-steps" aria-label="Huddle progress">
       {["Question", "Evidence", "Expert", "Brief"].map((label, i) => (
@@ -90,7 +90,7 @@ export function FlowSteps({ step }: { step: number; simple?: boolean }) {
           className={i <= step ? "active" : ""}
           aria-current={i === step ? "step" : undefined}
         >
-          {label}
+          {onSelect ? <button type="button" aria-current={i === step ? "step" : undefined} disabled={locked && i !== 0} onClick={() => onSelect(i)}>{label}</button> : label}
         </li>
       ))}
     </ol>

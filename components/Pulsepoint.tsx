@@ -22,7 +22,7 @@ import {
   X,
 } from "lucide-react";
 import { HuddleSchema, type Huddle, type View } from "@/types/huddle";
-import { initialHuddles, makeHuddle } from "@/data/demo";
+import { initialHuddles, makeHuddle, completeHuddle, sources, expert } from "@/data/demo";
 import { HuddleActions } from "./HuddleActions";
 import { huddleApi, isLive } from "@/lib/api";
 import { Brand, ErrorState, EvidenceList, FlowSteps, LoadingState } from "./ui";
@@ -31,6 +31,9 @@ import { ExpertResponse } from "./ExpertResponse";
 import { HuddleBrief } from "./HuddleBrief";
 import { QuestionGraph } from "./QuestionGraph";
 import { HuddleProgress } from "./HuddleProgress";
+import { QuestionUnderstanding } from "./QuestionUnderstanding";
+import { ExpertDetails } from "./ExpertDetails";
+import type { ClinicalQuestion } from "@/types/huddle";
 
 const SESSION_KEY = "pulsepoint-demo-v1";
 const viewTitles: Record<View, string> = {
@@ -48,6 +51,7 @@ export function Pulsepoint() {
   const [huddles, setHuddles] = useState<Huddle[]>(initialHuddles);
   const [current, setCurrent] = useState<Huddle | null>(null);
   const [busy, setBusy] = useState(false);
+  const [responseDrafts, setResponseDrafts] = useState<Record<string, string>>({});
   const [progressStep, setProgressStep] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
@@ -65,13 +69,15 @@ export function Pulsepoint() {
         const parsed = HuddleSchema.array().safeParse(JSON.parse(saved));
         if (parsed.success) setHuddles(parsed.data.filter((h) => h.demo).map(h => ({
           ...h,
+          expert: h.expert?.id === expert.id ? { ...h.expert, credentials: expert.credentials } : h.expert,
           sources: h.sources.map(source => ({ ...source, snippet: source.snippet.replace(/\bdemo\b/gi, "sample") })),
           response: h.response?.replace("For this demo,", "For this sample case,") ?? null,
           brief: h.brief ? {
             ...h.brief,
+            ...(!h.brief.takeawaySourceIds ? completeHuddle(h, h.response || "").brief : {}),
             synthesisLabel: h.brief.synthesisLabel.replace(/\bdemo\s*/gi, ""),
             evidence: h.brief.evidence.map(line => line.replace(/\bdemo\b/gi, "sample collection")),
-            takeaways: h.brief.takeaways.map(line => line.replace("the demo expert response", "the simulated expert response")),
+            takeaways: h.brief.takeawaySourceIds ? h.brief.takeaways : completeHuddle(h, h.response || "").brief!.takeaways,
           } : null,
         })));
       }
@@ -110,6 +116,17 @@ export function Pulsepoint() {
     setHuddles((old) =>
       [huddle, ...old.filter((h) => h.id !== huddle.id)].slice(0, 30),
     );
+  }
+  function confirmContext(context: ClinicalQuestion) {
+    if (!current) return;
+    const changed = JSON.stringify(context) !== JSON.stringify(current.question);
+    if (changed) setResponseDrafts(old => ({ ...old, [current.id]: "" }));
+    const supported = /breast/i.test(context.condition) && /oncology/i.test(context.specialty);
+    save({ ...current, question: context,
+      ...(changed ? { response: null, brief: null, status: "ready" as const,
+        sources: current.demo && supported ? sources : [],
+        expert: current.demo && supported ? expert : null } : {}) });
+    setView("evidence");
   }
   function newHuddle() {
     if (busy) return;
@@ -265,10 +282,11 @@ export function Pulsepoint() {
       </aside>
       <div className="main-shell">
         <header className="topbar">
-          <div className="breadcrumb">
-            Workspace <ChevronRight size={13} />
-            <span>{viewTitles[view]}</span>
-          </div>
+          <nav className="breadcrumb" aria-label="Breadcrumb">
+            <button onClick={() => navigate("home")} disabled={busy}>Workspace</button><ChevronRight size={13} />
+            {view !== "home" && view !== "graph" && <><button onClick={() => navigate("home")} disabled={busy}>My Huddles</button><ChevronRight size={13} /></>}
+            <span aria-current="page">{viewTitles[view]}</span>
+          </nav>
           <div className="topbar-actions">
             <button
               className="button secondary compact"
@@ -452,6 +470,8 @@ export function Pulsepoint() {
                 {view !== "graph" && (
                   <FlowSteps
                     simple={view === "expert" || view === "brief"}
+                    locked={busy || view === "understanding"}
+                    onSelect={current ? index => navigate((["understanding", "evidence", "expert", "brief"] as View[])[index]) : undefined}
                     step={
                       view === "understanding"
                         ? 0
@@ -466,62 +486,7 @@ export function Pulsepoint() {
               </div>
               {error && <ErrorState message={error} />}
               {view === "understanding" && current && (
-                <section className="understanding-panel">
-                  <div className="understanding-top">
-                    <span className="mini-icon">
-                      <Sparkles size={22} />
-                    </span>
-                    <div>
-                      <h2>Your question, understood.</h2>
-                      <p>
-                        {current.demo
-                          ? "Sample classification · review the extracted context below"
-                          : "Review the extracted context below"}
-                      </p>
-                    </div>
-                    <span className="complete-label">
-                      <Check size={14} /> Ready for review
-                    </span>
-                  </div>
-                  <blockquote>{current.question.question}</blockquote>
-                  <div className="extraction-grid">
-                    {[
-                      ["SPECIALTY", current.question.specialty],
-                      ["CONDITION", current.question.condition],
-                      ["TOPIC", current.question.topic],
-                      ["INTENT", current.question.intent],
-                    ].map(([label, value], i) => (
-                      <div
-                        className="extraction-item"
-                        key={label}
-                        style={{ animationDelay: `${i * 140}ms` }}
-                      >
-                        <span className="eyebrow">
-                          <Check size={13} />
-                          {label}
-                        </span>
-                        <h3>{value}</h3>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="panel-actions">
-                    <button
-                      className="button quiet"
-                      onClick={() => {
-                        setQuestion(current.question.question);
-                        navigate("home");
-                      }}
-                    >
-                      Edit question
-                    </button>
-                    <button
-                      className="button primary"
-                      onClick={() => navigate("evidence")}
-                    >
-                      Continue to evidence <ArrowRight size={16} />
-                    </button>
-                  </div>
-                </section>
+                <QuestionUnderstanding key={current.id + JSON.stringify(current.question)} huddle={current} onConfirm={confirmContext} />
               )}
               {view === "evidence" && current && (
                 <>
@@ -601,6 +566,7 @@ export function Pulsepoint() {
                               <span key={t}>{t}</span>
                             ))}
                           </div>
+                          <ExpertDetails huddle={current} />
                           <div className="expert-context">
                             <Check size={16} />
                             <p>
@@ -645,6 +611,8 @@ export function Pulsepoint() {
                   <ExpertResponse
                     key={current.id}
                     huddle={current}
+                    draft={responseDrafts[current.id] ?? current.response ?? ""}
+                    onDraftChange={text => setResponseDrafts(old => ({ ...old, [current.id]: text }))}
                     busy={busy}
                     onSubmit={(text) => void respond(text)}
                   />
@@ -669,7 +637,7 @@ export function Pulsepoint() {
               {view === "brief" && current && (
                 <HuddleBrief key={current.id} huddle={current} />
               )}
-              {view === "graph" && <QuestionGraph />}
+              {view === "graph" && <QuestionGraph huddles={huddles} onOpen={open} />}
             </>
           )}
           <footer className="page-footer">
@@ -715,7 +683,7 @@ export function Pulsepoint() {
             Use synthetic questions only; never enter real patient information.
           </li>
           <li>
-            Expert profiles and graph data are fictional. Sample briefs use
+            Expert profiles are fictional. The graph counts this session’s huddles, including starter samples. Sample briefs use
             templates, not a live AI model.
           </li>
           <li>

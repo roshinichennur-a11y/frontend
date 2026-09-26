@@ -17,7 +17,7 @@ test("complete huddle, export brief, retain session, and filter graph", async ({
   await expect(
     page.getByRole("heading", { name: "Question Understanding" }),
   ).toBeVisible();
-  await page.getByRole("button", { name: /Continue to evidence/ }).click();
+  await page.getByRole("button", { name: /Confirm context/ }).click();
   await expect(
     page.getByRole("heading", { name: "Dr. Maya Patel" }),
   ).toBeVisible();
@@ -51,8 +51,8 @@ test("complete huddle, export brief, retain session, and filter graph", async ({
   await expect(
     page.getByRole("heading", { name: "Question Graph" }),
   ).toBeVisible();
-  await page.getByRole("combobox").selectOption("Oncology");
-  await expect(page.getByText("90", { exact: true })).toBeVisible();
+  await page.getByRole("combobox").selectOption("oncology");
+  await expect(page.getByTestId("graph-total")).toHaveText("3");
   await page.screenshot({
     path: `../docs/screenshots/${testInfo.project.name}-graph.png`,
     fullPage: true,
@@ -72,7 +72,7 @@ test("unsupported question has no fabricated match and search supports empty sta
     .getByLabel("Clinical question", { exact: true })
     .fill("What evidence should I review for arrhythmia?");
   await page.getByRole("button", { name: "Start huddle", exact: true }).click();
-  await page.getByRole("button", { name: /Continue to evidence/ }).click();
+  await page.getByRole("button", { name: /Confirm context/ }).click();
   await expect(
     page.getByRole("heading", { name: "No matching evidence available" }),
   ).toBeVisible();
