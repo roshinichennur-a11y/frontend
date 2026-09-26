@@ -1,4 +1,19 @@
 /* User-selected palette: purple, dusty rose, plum, berry, pink, black and white. */
+.sidebar-bottom { margin-top: auto; }
+.topbar-actions { margin-left: auto; }
+.huddle-progress-overlay { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 20px; background: #fff8fceF; backdrop-filter: blur(8px); }
+.huddle-progress-panel { width: min(560px, 100%); text-align: center; border: 1px solid #e3cbdc; border-radius: 16px; padding: 36px 30px; background: white; box-shadow: 0 18px 70px #4c243b12; animation: reveal .2s ease-out; }
+.progress-emblem { display: inline-grid; place-items: center; width: 64px; height: 64px; border-radius: 18px; background: #f1e7fa; color: #54457f; margin-bottom: 22px; }
+.huddle-progress-panel h2 { color: #171017; font-size: 27px; font-weight: 650; margin: 14px 0 24px; }
+.huddle-progress-track { height: 6px; border-radius: 5px; overflow: hidden; background: #fae9f6; }
+.huddle-progress-track>span { display: block; height: 100%; border-radius: inherit; background: #b84a62; transition: width .35s ease; }
+.huddle-stage-list { display: grid; grid-template-columns: repeat(4,1fr); gap: 9px; list-style: none; padding: 0; margin: 22px 0; }
+.huddle-stage-list li { color: #70536a; font-size: 11px; line-height: 1.5; font-weight: 500; }
+.huddle-stage-list li>span { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 50%; border: 1px solid #d9bfd5; margin: 0 auto 9px; }
+.huddle-stage-list li.reached { color: #4c243b; font-weight: 650; }
+.huddle-stage-list li.reached>span { background: #54457f; border-color: #54457f; color: white; }
+.progress-caption { font-size: 12px; color: #57354e; }
+@media(max-width:650px) { .huddle-progress-panel { padding: 28px 18px; }.huddle-stage-list { gap: 6px; }.huddle-stage-list li { font-size: 10px; }.huddle-progress-panel h2 { font-size: 24px; } }
 :root {
   --purple: #54457f;
   --rose: #ac7b84;

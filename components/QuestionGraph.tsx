@@ -45,7 +45,7 @@ export function QuestionGraph() {
       </div>
       <div className="graph-metrics">
         <div>
-          <span className="eyebrow">QUESTIONS IN THE DEMO</span>
+          <span className="eyebrow">QUESTIONS IN THE DATASET</span>
           <strong>{total}</strong>
           <p>Across five clinical topics</p>
         </div>
@@ -69,7 +69,7 @@ export function QuestionGraph() {
               <span className="eyebrow">THE QUESTION LANDSCAPE</span>
               <h2>What’s coming up most?</h2>
             </div>
-            <span className="small muted">Demo snapshot</span>
+            <span className="small muted">Sample snapshot</span>
           </div>
           <div
             className="chart"
@@ -152,7 +152,7 @@ export function QuestionGraph() {
             <p>
               What support do clinicians need when trial eligibility is unclear?
             </p>
-            <span className="tiny-tag">DEMO EVIDENCE GAP</span>
+            <span className="tiny-tag">EVIDENCE GAP</span>
           </div>
           <div className="specialty-distribution">
             <h3>Specialty distribution</h3>

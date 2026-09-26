@@ -43,7 +43,7 @@ test("complete huddle, export brief, retain session, and filter graph", async ({
   );
   await page.reload();
   await expect(
-    page.getByRole("button", { name: /Treatment sequencing Demo case/ }),
+    page.getByRole("button", { name: /Treatment sequencing Sample case/ }),
   ).toHaveCount(2);
   await page
     .getByRole("button", { name: "Question Graph", exact: true })
@@ -74,7 +74,7 @@ test("unsupported question has no fabricated match and search supports empty sta
   await page.getByRole("button", { name: "Start huddle", exact: true }).click();
   await page.getByRole("button", { name: /Continue to evidence/ }).click();
   await expect(
-    page.getByRole("heading", { name: "No matching evidence in this demo" }),
+    page.getByRole("heading", { name: "No matching evidence available" }),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "No expert match", exact: true }),

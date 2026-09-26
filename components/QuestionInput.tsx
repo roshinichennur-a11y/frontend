@@ -91,7 +91,7 @@ export function QuestionInput({
       {listening && (
         <div className="voice-status" role="status">
           <span className="record-dot" />
-          Listening. Speak your demo question.
+          Listening. Speak your question.
         </div>
       )}
       {notice && (

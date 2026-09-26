@@ -3,7 +3,7 @@ import type { Evidence, Expert, Huddle } from "../types/huddle";
 export const EXAMPLE_QUESTION =
   "What evidence should I review about treatment sequencing in breast cancer, and which questions should I bring to an oncology expert?";
 export const EXAMPLE_RESPONSE =
-  "For this demo, I would frame the discussion around the treatment history, the specific clinical question, and which sources are current. The linked resources are starting points for review, not a patient-specific recommendation. I would ask the treating team to clarify missing context before discussing options.";
+  "For this sample case, I would frame the discussion around the treatment history, the specific clinical question, and which sources are current. The linked resources are starting points for review, not a patient-specific recommendation. I would ask the treating team to clarify missing context before discussing options.";
 
 export const sources: Evidence[] = [
   {
@@ -13,7 +13,7 @@ export const sources: Evidence[] = [
     type: "Evidence summary",
     date: "Living resource · review current page",
     snippet:
-      "A professional reference for reviewing breast cancer treatment evidence. This demo links to the source; it does not extract or validate treatment recommendations.",
+      "A professional reference for reviewing breast cancer treatment evidence. This resource links to the source; it does not extract or validate treatment recommendations.",
     url: "https://www.cancer.gov/types/breast/hp/breast-treatment-pdq",
     verified: true,
   },
@@ -35,7 +35,7 @@ export const sources: Evidence[] = [
     type: "Clinical resource",
     date: "Living resource · review current page",
     snippet:
-      "A starting point for breast cancer information and professional resources. Included as a curated demo link, not a live search result.",
+      "A starting point for breast cancer information and professional resources. Included as a curated reference link, not a live search result.",
     url: "https://www.cancer.gov/types/breast/hp",
     verified: true,
   },
@@ -77,19 +77,19 @@ export function completeHuddle(huddle: Huddle, response: string): Huddle {
     status: "complete",
     response,
     brief: {
-      synthesisLabel: "Template-based demo synthesis · not clinical advice",
+      synthesisLabel: "Template-based synthesis · not clinical advice",
       evidence: huddle.sources.length
         ? [
             "The curated NCI links offer starting points for a literature review. No live retrieval or patient-specific evidence assessment has been performed.",
             "Open each source to check its current content, scope, and applicability before using it in a clinical discussion.",
           ]
         : [
-            "No curated evidence matches this question in the demo. Evidence review remains incomplete.",
+            "No curated evidence matches this question in the sample collection. Evidence review remains incomplete.",
           ],
       takeaways: [
         "Keep the original question and missing clinical context visible.",
         "Review source material directly and check its currency.",
-        "Treat the demo expert response as a discussion prompt, not a recommendation.",
+        "Treat the simulated expert response as a discussion prompt, not a recommendation.",
       ],
       uncertainty:
         "Patient-specific context, source applicability, and the latest treatment updates have not been assessed. This prototype cannot determine a clinical course of action.",

@@ -18,7 +18,7 @@ describe("demo huddle lifecycle", () => {
     const complete = await huddleApi.respond(requested, EXAMPLE_RESPONSE);
     expect(complete.status).toBe("complete");
     expect(complete.response).toBe(EXAMPLE_RESPONSE);
-    expect(complete.brief?.synthesisLabel).toContain("demo");
+    expect(complete.brief?.synthesisLabel).toContain("Template-based");
     expect(HuddleSchema.safeParse(complete).success).toBe(true);
   });
   it("does not invent evidence or experts for an unsupported question", () => {

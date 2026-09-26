@@ -29,6 +29,7 @@ import { QuestionInput } from "./QuestionInput";
 import { ExpertResponse } from "./ExpertResponse";
 import { HuddleBrief } from "./HuddleBrief";
 import { QuestionGraph } from "./QuestionGraph";
+import { HuddleProgress } from "./HuddleProgress";
 
 const SESSION_KEY = "pulsepoint-demo-v1";
 const viewTitles: Record<View, string> = {
@@ -46,6 +47,7 @@ export function Pulsepoint() {
   const [huddles, setHuddles] = useState<Huddle[]>(initialHuddles);
   const [current, setCurrent] = useState<Huddle | null>(null);
   const [busy, setBusy] = useState(false);
+  const [progressStep, setProgressStep] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
@@ -60,7 +62,17 @@ export function Pulsepoint() {
       const saved = sessionStorage.getItem(SESSION_KEY);
       if (saved) {
         const parsed = HuddleSchema.array().safeParse(JSON.parse(saved));
-        if (parsed.success) setHuddles(parsed.data.filter((h) => h.demo));
+        if (parsed.success) setHuddles(parsed.data.filter((h) => h.demo).map(h => ({
+          ...h,
+          sources: h.sources.map(source => ({ ...source, snippet: source.snippet.replace(/\bdemo\b/gi, "sample") })),
+          response: h.response?.replace("For this demo,", "For this sample case,") ?? null,
+          brief: h.brief ? {
+            ...h.brief,
+            synthesisLabel: h.brief.synthesisLabel.replace(/\bdemo\s*/gi, ""),
+            evidence: h.brief.evidence.map(line => line.replace(/\bdemo\b/gi, "sample collection")),
+            takeaways: h.brief.takeaways.map(line => line.replace("the demo expert response", "the simulated expert response")),
+          } : null,
+        })));
       }
     } catch {
       /* Session storage can be unavailable in private browsers. */
@@ -108,9 +120,15 @@ export function Pulsepoint() {
   }
   async function create(demo = forceDemo) {
     setBusy(true);
+    setProgressStep(0);
     setError("");
     try {
       const huddle = await huddleApi.create(question, demo);
+      const delay = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 500;
+      for (let step = 0; step < 4; step++) {
+        setProgressStep(step);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
       save(huddle);
       setView("understanding");
     } catch (e) {
@@ -120,6 +138,7 @@ export function Pulsepoint() {
           : "We couldn’t prepare your huddle. Please try again.",
       );
     } finally {
+      setProgressStep(null);
       setBusy(false);
     }
   }
@@ -177,6 +196,7 @@ export function Pulsepoint() {
 
   return (
     <div className="app-shell">
+      {progressStep !== null && <HuddleProgress step={progressStep} />}
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>
@@ -230,18 +250,6 @@ export function Pulsepoint() {
             <Network size={18} /> Question Graph
           </button>
         </nav>
-        <div className="sidebar-note">
-          <span className="mini-icon">
-            <Activity size={21} />
-          </span>
-          <h3>
-            Better questions.
-            <br />
-            Better conversations.
-          </h3>
-          <p>A little more clarity, right when you need it.</p>
-          <span className="note-line" />
-        </div>
         <div className="sidebar-bottom">
           <button className="help-button" onClick={() => setHelp(true)}>
             <CircleHelp size={17} /> About this demo <ArrowUpRight size={14} />
@@ -249,7 +257,7 @@ export function Pulsepoint() {
           <div className="user-profile">
             <span className="avatar">HC</span>
             <div>
-              HCP demo workspace<small>Clinician view</small>
+              HCP workspace<small>Clinician view</small>
             </div>
           </div>
         </div>
@@ -261,9 +269,6 @@ export function Pulsepoint() {
             <span>{viewTitles[view]}</span>
           </div>
           <div className="topbar-actions">
-            <span className="demo-indicator">
-              {demoMode ? "Demo environment" : "Connected service"}
-            </span>
             <button
               className="button secondary compact"
               onClick={newHuddle}
@@ -303,7 +308,7 @@ export function Pulsepoint() {
                     void create(true);
                   }}
                 >
-                  Switch to labeled demo
+                  Use sample workflow
                 </button>
               )}
               <section className="recent-section">
@@ -370,7 +375,7 @@ export function Pulsepoint() {
                         <span>
                           {h.question.topic}
                           <small>
-                            {h.demo ? "Demo case" : "Connected huddle"} ·{" "}
+                            {h.demo ? "Sample case" : "Connected huddle"} ·{" "}
                             {h.sources.length} sources
                           </small>
                         </span>
@@ -417,11 +422,11 @@ export function Pulsepoint() {
                   >
                     <ArrowLeft size={14} /> My Huddles
                   </button>
-                  <span className="eyebrow">
+                  {view !== "brief" && <span className="eyebrow">
                     {view === "graph"
                       ? "THE BIGGER PICTURE"
                       : "CONTEXT MAKES THE DIFFERENCE"}
-                  </span>
+                  </span>}
                   <h1 ref={heading} tabIndex={-1}>{viewTitles[view]}</h1>
                   <p>
                     {view === "graph"
@@ -435,7 +440,7 @@ export function Pulsepoint() {
                 </div>
                 {view !== "graph" && (
                   <FlowSteps
-                    simple={view === "expert"}
+                    simple={view === "expert" || view === "brief"}
                     step={
                       view === "understanding"
                         ? 0
@@ -459,7 +464,7 @@ export function Pulsepoint() {
                       <h2>Your question, understood.</h2>
                       <p>
                         {current.demo
-                          ? "Demo classification · review the extracted context below"
+                          ? "Sample classification · review the extracted context below"
                           : "Review the extracted context below"}
                       </p>
                     </div>
@@ -524,7 +529,7 @@ export function Pulsepoint() {
                         </h2>
                         <span className="small muted">
                           {current.demo
-                            ? "Curated demo resources"
+                            ? "Curated resources"
                             : "Retrieved sources"}
                         </span>
                       </div>
@@ -533,9 +538,9 @@ export function Pulsepoint() {
                       ) : (
                         <div className="empty-state">
                           <BookOpen size={28} />
-                          <h3>No matching evidence in this demo</h3>
+                          <h3>No matching evidence available</h3>
                           <p>
-                            The seeded demonstration covers breast cancer. Use
+                            The sample collection covers breast cancer. Use
                             the sample question to explore the complete flow.
                           </p>
                           <button
@@ -564,7 +569,7 @@ export function Pulsepoint() {
                             <p>{current.expert.specialty}</p>
                             <span className="pill">
                               {current.expert.demo
-                                ? "Fictional demo profile"
+                                ? "Fictional profile"
                                 : "Matched expert"}
                             </span>
                           </div>
@@ -589,7 +594,7 @@ export function Pulsepoint() {
                             <Check size={16} />
                             <p>
                               {current.expert.demo
-                                ? "A simulated expert is ready for this demo huddle."
+                                ? "A simulated expert is ready for this huddle."
                                 : "Request an expert perspective on this question."}
                             </p>
                           </div>
@@ -608,7 +613,7 @@ export function Pulsepoint() {
                           </button>
                           <p className="small muted centered">
                             {current.demo
-                              ? "Opens the demo expert workspace"
+                              ? "Opens the expert workspace"
                               : "Sends to your connected service"}
                           </p>
                         </>
@@ -662,7 +667,7 @@ export function Pulsepoint() {
             </span>
             <span>
               {demoMode
-                ? "Demo content. Not for clinical use."
+                ? "Sample content. Not for clinical use."
                 : "Integration preview. Not for clinical use."}
             </span>
             <button onClick={() => setHelp(true)}>
@@ -699,7 +704,7 @@ export function Pulsepoint() {
             Use synthetic questions only; never enter real patient information.
           </li>
           <li>
-            Expert profiles and graph data are fictional. Demo briefs use
+            Expert profiles and graph data are fictional. Sample briefs use
             templates, not a live AI model.
           </li>
           <li>
@@ -707,7 +712,7 @@ export function Pulsepoint() {
             descriptive and not clinical advice.
           </li>
           <li>
-            Demo huddles stay in this browser tab’s session storage. Live
+            Sample huddles stay in this browser tab’s session storage. Live
             huddles are not stored there.
           </li>
           <li>
@@ -725,7 +730,7 @@ export function Pulsepoint() {
             setHelp(false);
           }}
         >
-          Reset demo data
+          Reset sample data
         </button>
       </dialog>
     </div>

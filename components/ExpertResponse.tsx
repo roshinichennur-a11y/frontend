@@ -39,7 +39,7 @@ export function ExpertResponse({
             <h3>{huddle.expert?.name || "Expert response"}</h3>
             <p>
               {huddle.expert?.demo
-                ? "Fictional expert · demo workspace"
+                ? "Fictional expert · sample workspace"
                 : huddle.expert?.specialty}
             </p>
           </div>
@@ -110,7 +110,7 @@ export function ExpertResponse({
         </button>
         <p className="small muted">
           {huddle.demo
-            ? "Demo response only. No request is sent to a real clinician."
+            ? "Simulated response only. No request is sent to a real clinician."
             : "Submit this perspective to the connected huddle service."}
         </p>
       </section>

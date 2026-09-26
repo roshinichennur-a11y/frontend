@@ -24,7 +24,7 @@ export function HuddleBrief({ huddle }: { huddle: Huddle }) {
   if (!huddle.brief)
     return <p>This huddle is waiting for an expert response.</p>;
   const brief = huddle.brief;
-  const text = `PULSEPOINT — CLINICAL HUDDLE BRIEF\n${brief.synthesisLabel}\n\nQUESTION\n${huddle.question.question}\n\nEVIDENCE\n${brief.evidence.join("\n")}\n\nEXPERT PERSPECTIVE${huddle.expert?.demo ? " (FICTIONAL DEMO)" : ""}\n${huddle.response}\n\nKEY TAKEAWAYS\n${brief.takeaways.map((t) => `• ${t}`).join("\n")}\n\nUNCERTAINTY\n${brief.uncertainty}\n\nSOURCES\n${huddle.sources.map((s) => `${s.title}\n${s.url}`).join("\n\n")}`;
+  const text = `PULSEPOINT — CLINICAL HUDDLE BRIEF\n${brief.synthesisLabel}\n\nQUESTION\n${huddle.question.question}\n\nEVIDENCE\n${brief.evidence.join("\n")}\n\nEXPERT PERSPECTIVE${huddle.expert?.demo ? " (FICTIONAL EXPERT)" : ""}\n${huddle.response}\n\nKEY TAKEAWAYS\n${brief.takeaways.map((t) => `• ${t}`).join("\n")}\n\nUNCERTAINTY\n${brief.uncertainty}\n\nSOURCES\n${huddle.sources.map((s) => `${s.title}\n${s.url}`).join("\n\n")}`;
   async function copy() {
     try {
       await navigator.clipboard.writeText(text);
@@ -119,7 +119,7 @@ export function HuddleBrief({ huddle }: { huddle: Huddle }) {
               {huddle.expert?.name}
               <small>
                 {huddle.expert?.demo
-                  ? "Fictional demo expert"
+                  ? "Fictional expert"
                   : huddle.expert?.specialty}
               </small>
             </span>
@@ -130,7 +130,7 @@ export function HuddleBrief({ huddle }: { huddle: Huddle }) {
             <span className="section-index">04</span>
             <h3>Key takeaways</h3>
             <span className="tiny-tag">
-              {huddle.demo ? "DEMO SYNTHESIS" : "AI SYNTHESIS"}
+              {huddle.demo ? "TEMPLATE SYNTHESIS" : "AI SYNTHESIS"}
             </span>
           </div>
           <ul>
