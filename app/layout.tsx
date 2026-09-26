@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./dashboard.css";
+import "./palette.css";
 export const metadata: Metadata = {
   title: "PULSEPOINT — Clinical workspace",
   description:

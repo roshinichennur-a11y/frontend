@@ -6,7 +6,7 @@ test("complete huddle, export brief, retain session, and filter graph", async ({
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: /Good questions deserve/ }),
+    page.getByRole("heading", { name: "My Huddles" }),
   ).toBeVisible();
   await page.screenshot({
     path: `../docs/screenshots/${testInfo.project.name}-home.png`,
@@ -15,7 +15,7 @@ test("complete huddle, export brief, retain session, and filter graph", async ({
   await page.getByRole("button", { name: /Try a sample question/ }).click();
   await page.getByRole("button", { name: "Start huddle", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "Let’s get the question right." }),
+    page.getByRole("heading", { name: "Question Understanding" }),
   ).toBeVisible();
   await page.getByRole("button", { name: /Continue to evidence/ }).click();
   await expect(
@@ -27,7 +27,7 @@ test("complete huddle, export brief, retain session, and filter graph", async ({
   await page.getByRole("button", { name: "Use simulated response" }).click();
   await page.getByRole("button", { name: "Create huddle brief" }).click();
   await expect(
-    page.getByRole("heading", { name: "Clarity, brought together." }),
+    page.getByRole("heading", { name: "Huddle Brief" }),
   ).toBeVisible();
   await expect(
     page.getByText("SIMULATED OPINION", { exact: true }),
@@ -46,10 +46,10 @@ test("complete huddle, export brief, retain session, and filter graph", async ({
     page.getByRole("button", { name: /Treatment sequencing Demo case/ }),
   ).toHaveCount(2);
   await page
-    .getByRole("button", { name: "Question graph", exact: true })
+    .getByRole("button", { name: "Question Graph", exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: "What HCPs are asking." }),
+    page.getByRole("heading", { name: "Question Graph" }),
   ).toBeVisible();
   await page.getByRole("combobox").selectOption("Oncology");
   await expect(page.getByText("90", { exact: true })).toBeVisible();
@@ -80,7 +80,7 @@ test("unsupported question has no fabricated match and search supports empty sta
     page.getByRole("heading", { name: "No expert match", exact: true }),
   ).toBeVisible();
   await page
-    .getByRole("button", { name: "My huddles", exact: true })
+    .getByRole("button", { name: "My Huddles", exact: true })
     .last()
     .click();
   await page.getByRole("textbox", { name: "Search huddles" }).fill("zzzzzz");

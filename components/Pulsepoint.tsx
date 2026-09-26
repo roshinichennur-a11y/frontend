@@ -32,12 +32,12 @@ import { QuestionGraph } from "./QuestionGraph";
 
 const SESSION_KEY = "pulsepoint-demo-v1";
 const viewTitles: Record<View, string> = {
-  home: "My workspace",
-  understanding: "Question understanding",
-  evidence: "Your huddle",
-  expert: "Expert workspace",
-  brief: "Huddle brief",
-  graph: "Question intelligence",
+  home: "My Huddles",
+  understanding: "Question Understanding",
+  evidence: "Evidence & Expert",
+  expert: "Expert Workspace",
+  brief: "Huddle Brief",
+  graph: "Question Graph",
 };
 
 export function Pulsepoint() {
@@ -205,7 +205,7 @@ export function Pulsepoint() {
             onClick={() => navigate("home")}
             disabled={busy}
           >
-            <Home size={18} /> My huddles
+            <Home size={18} /> My Huddles
             <span className="nav-count">{huddles.length}</span>
           </button>
           <button
@@ -217,7 +217,7 @@ export function Pulsepoint() {
             }}
             disabled={busy}
           >
-            <Users size={18} /> Expert workspace
+            <Users size={18} /> Expert Workspace
             {huddles.some((h) => h.status === "pending") && (
               <span className="pending-dot" />
             )}
@@ -227,7 +227,7 @@ export function Pulsepoint() {
             onClick={() => navigate("graph")}
             disabled={busy}
           >
-            <Network size={18} /> Question graph
+            <Network size={18} /> Question Graph
           </button>
         </nav>
         <div className="sidebar-note">
@@ -277,11 +277,7 @@ export function Pulsepoint() {
           {view === "home" ? (
             <>
               <div className="page-intro">
-                <h1 ref={heading} tabIndex={-1}>
-                  Good questions deserve
-                  <br />
-                  <span>more than a quick search.</span>
-                </h1>
+                <h1 ref={heading} tabIndex={-1}>{viewTitles[view]}</h1>
                 <p>
                   The clinical question you couldn’t ask in 30 seconds.
                   <br className="desktop-break" /> Bring it here. We’ll help you
@@ -419,24 +415,14 @@ export function Pulsepoint() {
                     onClick={() => navigate("home")}
                     disabled={busy}
                   >
-                    <ArrowLeft size={14} /> My huddles
+                    <ArrowLeft size={14} /> My Huddles
                   </button>
                   <span className="eyebrow">
                     {view === "graph"
                       ? "THE BIGGER PICTURE"
                       : "CONTEXT MAKES THE DIFFERENCE"}
                   </span>
-                  <h1 ref={heading} tabIndex={-1}>
-                    {view === "graph"
-                      ? "What HCPs are asking."
-                      : view === "understanding"
-                        ? "Let’s get the question right."
-                        : view === "evidence"
-                          ? "The right context. The right perspective."
-                          : view === "expert"
-                            ? "Bring your perspective."
-                            : "Clarity, brought together."}
-                  </h1>
+                  <h1 ref={heading} tabIndex={-1}>{viewTitles[view]}</h1>
                   <p>
                     {view === "graph"
                       ? "Turn individual questions into a shared understanding of what matters."
