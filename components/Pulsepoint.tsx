@@ -29,7 +29,6 @@ import { QuestionInput } from "./QuestionInput";
 import { ExpertResponse } from "./ExpertResponse";
 import { HuddleBrief } from "./HuddleBrief";
 import { QuestionGraph } from "./QuestionGraph";
-import { WorkspaceOverview } from "./WorkspaceOverview";
 
 const SESSION_KEY = "pulsepoint-demo-v1";
 const viewTitles: Record<View, string> = {
@@ -301,10 +300,6 @@ export function Pulsepoint() {
                   onChange={setQuestion}
                   onSubmit={() => void create()}
                   busy={busy}
-                />
-                <WorkspaceOverview
-                  huddles={huddles}
-                  onShowGraph={() => navigate("graph")}
                 />
               </div>
               {error && (

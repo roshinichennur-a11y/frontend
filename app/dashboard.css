@@ -245,7 +245,7 @@ nav button.active {
 .question-composer {
   width: 100%;
   grid-column: 1;
-  grid-row: 2 / span 2;
+  grid-row: 2;
   align-self: start;
   padding: 21px 19px;
   background: #ffffffbf;
@@ -454,7 +454,7 @@ nav button.active {
 }
 .recent-section {
   grid-column: 2;
-  grid-row: 3;
+  grid-row: 2;
   margin-top: 0;
 }
 .section-label h2 {
