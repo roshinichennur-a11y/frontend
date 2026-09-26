@@ -81,16 +81,15 @@ export function EvidenceList({ sources }: { sources: Evidence[] }) {
     </div>
   );
 }
-export function FlowSteps({ step, simple = false }: { step: number; simple?: boolean }) {
+export function FlowSteps({ step }: { step: number; simple?: boolean }) {
   return (
-    <ol className={`flow-steps${simple ? " simple-steps" : ""}`} aria-label="Huddle progress">
+    <ol className="flow-steps simple-steps" aria-label="Huddle progress">
       {["Question", "Evidence", "Expert", "Brief"].map((label, i) => (
         <li
           key={label}
           className={i <= step ? "active" : ""}
           aria-current={i === step ? "step" : undefined}
         >
-          {!simple && <span>{i < step ? <Check size={12} /> : i + 1}</span>}
           {label}
         </li>
       ))}

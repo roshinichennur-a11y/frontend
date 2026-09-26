@@ -117,3 +117,12 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
  .sidebar { background: white; border-top-color: #e3cbdc; }
  .sidebar nav button.active { box-shadow: inset 0 3px #b84a62; }
 }
+.huddle-entry { margin-bottom: 20px; }
+.huddle-entry .huddle-row { margin-bottom: 0; border-radius: 0; }
+.huddle-actions { display: flex; gap: 18px; justify-content: flex-end; padding: 8px 15px; background: white; border-top: 1px solid #f0deec; border-radius: 0 0 7px 7px; }
+.huddle-actions button { border: 0; background: transparent; color: #54457f; font-size: 12px; font-weight: 650; padding: 7px 3px; min-height: 34px; }
+.huddle-actions button:hover { text-decoration: underline; }
+.huddle-actions .delete-huddle { color: #942e49; }
+.edit-huddle-dialog textarea { width: 100%; border: 1px solid #ac7b84; border-radius: 6px; padding: 12px; color: #171017; background: #fff; font-size: 14px; line-height: 1.7; }
+.edit-huddle-dialog blockquote { margin: 18px 0; padding: 13px; background: #fff0f8; color: #4c243b; border-left: 3px solid #b84a62; }
+.flow-steps li::before,.flow-steps li::after { content: none !important; display: none !important; }

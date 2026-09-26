@@ -77,7 +77,7 @@ export function HuddleBrief({ huddle }: { huddle: Huddle }) {
           </span>
         </div>
         <div className="brief-question">
-          <span className="eyebrow">01 / CLINICAL QUESTION</span>
+          <span className="eyebrow">CLINICAL QUESTION</span>
           <h2>{huddle.question.question}</h2>
           <div className="flex flex-wrap gap-2">
             <span className="pill">{huddle.question.specialty}</span>
@@ -86,7 +86,6 @@ export function HuddleBrief({ huddle }: { huddle: Huddle }) {
         </div>
         <section className="brief-section">
           <div className="brief-section-heading">
-            <span className="section-index">02</span>
             <h3>What the evidence says</h3>
             <span className="tiny-tag">CURATED SOURCES</span>
           </div>
@@ -104,7 +103,6 @@ export function HuddleBrief({ huddle }: { huddle: Huddle }) {
         </section>
         <section className="brief-section">
           <div className="brief-section-heading">
-            <span className="section-index">03</span>
             <h3>Expert perspective</h3>
             <span className="tiny-tag">
               {huddle.expert?.demo ? "SIMULATED OPINION" : "EXPERT OPINION"}
@@ -127,7 +125,6 @@ export function HuddleBrief({ huddle }: { huddle: Huddle }) {
         </section>
         <section className="brief-section takeaways">
           <div className="brief-section-heading">
-            <span className="section-index">04</span>
             <h3>Key takeaways</h3>
             <span className="tiny-tag">
               {huddle.demo ? "TEMPLATE SYNTHESIS" : "AI SYNTHESIS"}

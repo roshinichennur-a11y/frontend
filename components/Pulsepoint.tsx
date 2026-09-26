@@ -22,7 +22,8 @@ import {
   X,
 } from "lucide-react";
 import { HuddleSchema, type Huddle, type View } from "@/types/huddle";
-import { initialHuddles } from "@/data/demo";
+import { initialHuddles, makeHuddle } from "@/data/demo";
+import { HuddleActions } from "./HuddleActions";
 import { huddleApi, isLive } from "@/lib/api";
 import { Brand, ErrorState, EvidenceList, FlowSteps, LoadingState } from "./ui";
 import { QuestionInput } from "./QuestionInput";
@@ -355,6 +356,7 @@ export function Pulsepoint() {
                     <span />
                   </div>
                   {filtered.map((h) => (
+                    <div className="huddle-entry" key={h.id}>
                     <button
                       key={h.id}
                       className={`huddle-row timeline-${h.status}`}
@@ -400,6 +402,15 @@ export function Pulsepoint() {
                       </span>
                       <ArrowUpRight size={17} />
                     </button>
+                    <HuddleActions huddle={h} disabled={busy} onEdit={text => {
+                      const updated = { ...makeHuddle(text, h.id), createdAt: h.createdAt };
+                      setHuddles(old => old.map(item => item.id === h.id ? updated : item));
+                      if(current?.id === h.id) setCurrent(updated);
+                    }} onDelete={() => {
+                      setHuddles(old => old.filter(item => item.id !== h.id));
+                      if(current?.id === h.id) setCurrent(null);
+                    }} />
+                    </div>
                   ))}
                   {!filtered.length && (
                     <div className="empty-state">
