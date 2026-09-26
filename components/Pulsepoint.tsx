@@ -195,9 +195,8 @@ export function Pulsepoint() {
         <div className="workspace-label">
           <span className="workspace-symbol">P</span>
           <div>
-            Clinical workspace<small>HackGT 13 · Prototype</small>
+            Clinical workspace
           </div>
-          <span className="signal-dot" />
         </div>
         <div className="nav-label">WORKSPACE</div>
         <nav aria-label="Main navigation">
@@ -252,7 +251,6 @@ export function Pulsepoint() {
             <div>
               HCP demo workspace<small>Clinician view</small>
             </div>
-            <span className="profile-dot" />
           </div>
         </div>
       </aside>
@@ -264,7 +262,6 @@ export function Pulsepoint() {
           </div>
           <div className="topbar-actions">
             <span className="demo-indicator">
-              <span />
               {demoMode ? "Demo environment" : "Connected service"}
             </span>
             <button
@@ -280,9 +277,6 @@ export function Pulsepoint() {
           {view === "home" ? (
             <>
               <div className="page-intro">
-                <div className="eyebrow greeting">
-                  <span className="signal-dot" /> A BETTER CLINICAL CONVERSATION
-                </div>
                 <h1 ref={heading} tabIndex={-1}>
                   Good questions deserve
                   <br />
@@ -455,6 +449,7 @@ export function Pulsepoint() {
                 </div>
                 {view !== "graph" && (
                   <FlowSteps
+                    simple={view === "expert"}
                     step={
                       view === "understanding"
                         ? 0
@@ -680,7 +675,6 @@ export function Pulsepoint() {
               <Activity size={14} /> PULSEPOINT
             </span>
             <span>
-              HackGT 13 prototype ·{" "}
               {demoMode
                 ? "Demo content. Not for clinical use."
                 : "Integration preview. Not for clinical use."}
@@ -711,7 +705,7 @@ export function Pulsepoint() {
         </div>
         <h2>A clinical conversation, reimagined.</h2>
         <p>
-          PULSEPOINT is a HackGT prototype that connects questions, evidence,
+          PULSEPOINT connects questions, evidence,
           and expert perspectives.
         </p>
         <ul>

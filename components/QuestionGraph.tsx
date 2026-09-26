@@ -25,7 +25,7 @@ export function QuestionGraph() {
     <div className="graph-page">
       <div className="graph-toolbar">
         <div>
-          <span className="pill amber">Synthetic dataset</span>
+          <span className="pill synthetic-badge">Synthetic dataset</span>
           <p className="small muted">
             Illustrative aggregate data. No patient information or real HCP
             activity.
@@ -172,10 +172,6 @@ export function QuestionGraph() {
             ))}
           </div>
         </aside>
-      </div>
-      <div className="graph-note">
-        <span className="signal-dot" />
-        Every good question reveals where a better conversation is needed.
       </div>
     </div>
   );

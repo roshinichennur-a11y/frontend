@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./dashboard.css";
 export const metadata: Metadata = {
-  title: "PULSEPOINT — A better clinical conversation",
+  title: "PULSEPOINT — Clinical workspace",
   description:
     "A question-driven clinical collaboration demo. Evidence, expert perspective, and a clearer next step.",
 };
