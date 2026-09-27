@@ -12,9 +12,10 @@ import {
 } from "lucide-react";
 import type { Huddle } from "@/types/huddle";
 import { buildVoiceBrief } from "@/lib/voiceBrief";
+import { NextBestAction } from "./NextBestAction";
 import { ExpertDetails } from "./ExpertDetails";
 
-export function HuddleBrief({ huddle }: { huddle: Huddle }) {
+export function HuddleBrief({ huddle, onExpert, busy }: { huddle: Huddle; onExpert: () => void; busy: boolean }) {
   const [speaking, setSpeaking] = useState(false);
   const [notice, setNotice] = useState("");
   useEffect(
@@ -27,7 +28,7 @@ export function HuddleBrief({ huddle }: { huddle: Huddle }) {
     return <section className="understanding-panel"><h2>Your brief is not ready yet</h2><p>Open Expert to add a response and create the brief. You can review Question and Evidence while you wait.</p></section>;
   const brief = huddle.brief;
   const voiceScript = brief.voiceScript || buildVoiceBrief(huddle);
-  const text = `PULSEPOINT — CLINICAL HUDDLE BRIEF\n${brief.synthesisLabel}\n\nQUESTION\n${huddle.question.question}\n\nEVIDENCE\n${brief.evidence.join("\n")}\n\nEXPERT PERSPECTIVE${huddle.expert?.demo ? " (FICTIONAL EXPERT)" : ""}\n${huddle.response}\n\nKEY TAKEAWAYS\n${brief.takeaways.map((t, i) => `• ${t}\n${huddle.sources.filter(s => brief.takeawaySourceIds?.[i]?.includes(s.id)).map(s => `${s.title}: ${s.url}`).join("\n")}`).join("\n")}\n\nUNCERTAINTY\n${brief.uncertainty}\n\nSOURCES\n${huddle.sources.map((s) => `${s.title}\n${s.url}`).join("\n\n")}`;
+  const text = `PULSEPOINT — CLINICAL HUDDLE BRIEF\n${brief.synthesisLabel}\n\nQUESTION\n${huddle.question.question}\n\nEVIDENCE\n${brief.evidence.join("\n")}\n\nEXPERT PERSPECTIVE${huddle.expert?.demo ? " (FICTIONAL EXPERT)" : ""}\n${huddle.response}\n\nKEY TAKEAWAYS\n${brief.takeaways.map((t, i) => `• ${t}\n${huddle.sources.filter(s => brief.takeawaySourceIds?.[i]?.includes(s.id)).map(s => `${s.title}: ${s.url}`).join("\n")}`).join("\n")}\n\nUNCERTAINTY\n${brief.uncertainty}\n\nNEXT BEST ACTION\n${huddle.sources.length ? "Review the supplied evidence references below." : "No evidence pathway supplied."}\n${huddle.expert ? `Continue the huddle with ${huddle.expert.name}${huddle.expert.demo ? " (simulated; no real clinician is contacted)" : ""}.` : "No expert pathway supplied."}\nEngagement options, not treatment recommendations.\n\nSOURCES\n${huddle.sources.map((s) => `${s.title}\n${s.url}`).join("\n\n")}`;
   async function copy() {
     try {
       await navigator.clipboard.writeText(text);
@@ -92,11 +93,12 @@ export function HuddleBrief({ huddle }: { huddle: Huddle }) {
             <span className="pill">{huddle.question.specialty}</span>
             <span className="pill">{huddle.question.topic}</span>
           </div>
+          <a className="button secondary brief-action-jump" href="#next-best-action">Choose your next step</a>
         </div>
         <section className="brief-section">
           <div className="brief-section-heading">
-            <h3>What the evidence says</h3>
-            <span className="tiny-tag">CURATED SOURCES</span>
+            <h3>Key Evidence</h3>
+            <span className="tiny-tag">{brief.synthesisLabel.startsWith("AI") ? "AI SUMMARY · REVIEW SOURCES" : "SUPPLIED SOURCE CONTEXT"}</span>
           </div>
           {brief.evidence.map((line, index) => (
             <div key={index}><p>{line}</p><div className="inline-citations">{huddle.sources.filter(source => brief.evidenceSourceIds?.[index]?.includes(source.id)).map(source => <a key={source.id} href={source.url} target="_blank" rel="noreferrer">{source.title}</a>)}</div></div>
@@ -163,7 +165,8 @@ export function HuddleBrief({ huddle }: { huddle: Huddle }) {
             <p>{brief.uncertainty}</p>
           </div>
         </section>
-        <section className="brief-section sources-section">
+        <NextBestAction huddle={huddle} onExpert={onExpert} busy={busy} />
+        <section className="brief-section sources-section" id="brief-sources" tabIndex={-1}>
           <h3>Sources & references</h3>
           <ol>
             {huddle.sources.map((s) => (
@@ -185,7 +188,7 @@ export function HuddleBrief({ huddle }: { huddle: Huddle }) {
         </footer>
       </article>
       <aside className="brief-aside">
-        <div className="eyebrow">A CLEARER NEXT CONVERSATION</div>
+        <div className="eyebrow">YOUR ENGAGEMENT PATHWAY</div>
         <h3>
           Keep the context.
           <br />

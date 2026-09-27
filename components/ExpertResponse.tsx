@@ -33,7 +33,7 @@ export function ExpertResponse({
         </div>
         <h2 className="question-display">{huddle.question.question}</h2>
         <h3 className="section-title">Evidence context</h3>
-        <EvidenceList sources={huddle.sources} />
+        <EvidenceList sources={huddle.sources} huddle={huddle} />
       </section>
       <section className="response-panel">
         <div className="expert-identity">

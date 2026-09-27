@@ -30,7 +30,7 @@ export function QuestionInput({
   return (
     <div className="question-composer">
       <div className="composer-heading">
-        <span className="eyebrow">YOUR NEXT CLINICAL CONVERSATION</span>
+        <span className="eyebrow">YOUR QUESTION IS THE SIGNAL</span>
         <AudioLines size={22} />
       </div>
       <form

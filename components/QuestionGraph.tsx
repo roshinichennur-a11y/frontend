@@ -28,6 +28,7 @@ export function QuestionGraph({ huddles, onOpen }: { huddles: Huddle[]; onOpen: 
   const activeTopic = data.find(row => row.id === selected) || leading;
   const questions = (activeTopic?.questions || []).filter(h => !unansweredOnly || h.status !== "complete");
   return <div className="graph-page">
+    <p className="engagement-path">Every HCP question can become an intelligence signal. Explore the topics and unanswered questions in this workspace.</p>
     <div className="graph-toolbar">
       <div><span className="pill synthetic-badge">Current session</span>
         <p className="small muted">Counts reflect the huddles in this workspace, including the starter samples. Submissions, answers, edits, and deletions update these totals.</p>

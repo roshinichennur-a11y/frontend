@@ -22,7 +22,7 @@ test("complete huddle, export brief, retain session, and filter graph", async ({
     page.getByRole("heading", { name: "Dr. Maya Patel" }),
   ).toBeVisible();
   await page
-    .getByRole("button", { name: "Request huddle", exact: true })
+    .getByRole("button", { name: "Request Expert Connection", exact: true })
     .click();
   await page.getByRole("button", { name: "Use simulated response" }).click();
   await page.getByRole("button", { name: "Create huddle brief" }).click();

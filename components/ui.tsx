@@ -6,7 +6,7 @@ import {
   Info,
   LoaderCircle,
 } from "lucide-react";
-import type { Evidence } from "@/types/huddle";
+import type { Evidence, Huddle } from "@/types/huddle";
 export function Brand() {
   return (
     <span className="brand">
@@ -44,7 +44,7 @@ export function ErrorState({
     </div>
   );
 }
-export function EvidenceList({ sources }: { sources: Evidence[] }) {
+export function EvidenceList({ sources, huddle }: { sources: Evidence[]; huddle?: Huddle }) {
   return (
     <div className="evidence-list">
       {sources.map((source, i) => (
@@ -69,6 +69,10 @@ export function EvidenceList({ sources }: { sources: Evidence[] }) {
               </a>
             </h3>
             <p>{source.snippet}</p>
+            {huddle && <div className="source-relevance">
+              <p><strong>Why shown:</strong> {huddle.intelligence?.evidenceClaims.some(claim => claim.source_ids.includes(source.id)) ? "Referenced in this huddle’s evidence context. Check the excerpt for applicability." : "Included in the supplied evidence set. Source-specific relevance has not been assessed."}</p>
+              <p><strong>Question being explored:</strong> {huddle.question.question}</p>
+            </div>}
             <div className="source-meta">
               <FileText size={13} />
               {source.publisher}

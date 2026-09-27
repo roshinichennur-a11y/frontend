@@ -164,7 +164,9 @@ export function Pulsepoint() {
     }
   }
   async function requestExpert() {
-    if (!current) return;
+    if (!current || busy) return;
+    if (current.status === "pending" || current.status === "complete") { navigate("expert"); return; }
+    if (!current.expert || current.expert.available === false) return;
     setBusy(true);
     setError("");
     try {
@@ -306,11 +308,10 @@ export function Pulsepoint() {
               <div className="page-intro">
                 <h1 ref={heading} tabIndex={-1}>{viewTitles[view]}</h1>
                 <p>
-                  The clinical question you couldn’t ask in 30 seconds.
-                  <br className="desktop-break" /> Bring it here. We’ll help you
-                  find the next conversation.
+                  An intelligent HCP engagement platform that turns an unanswered clinical question into an actionable engagement pathway.
                 </p>
               </div>
+              <p className="engagement-path" aria-label="Engagement workflow">Question → Intent → Evidence → Expert / Resource → Huddle → Brief → Next Best Action</p>
               <div className="home-grid">
                 <QuestionInput
                   value={question}
@@ -456,18 +457,18 @@ export function Pulsepoint() {
                   </button>
                   {view !== "brief" && <span className="eyebrow">
                     {view === "graph"
-                      ? "THE BIGGER PICTURE"
+                      ? "HCP QUESTION INTELLIGENCE"
                       : "CONTEXT MAKES THE DIFFERENCE"}
                   </span>}
                   <h1 ref={heading} tabIndex={-1}>{viewTitles[view]}</h1>
                   <p>
                     {view === "graph"
-                      ? "Turn individual questions into a shared understanding of what matters."
+                      ? "Understand what healthcare professionals are asking and where they need support."
                       : view === "brief"
-                        ? "Your question, the evidence, and an expert perspective—all in one place."
+                        ? "Your question, evidence, and expert perspective—ready for your next step."
                         : view === "expert"
                           ? "A focused question deserves a thoughtful response."
-                          : "A little structure makes room for a more useful conversation."}
+                          : "Right information. Right expert. Right resource. Right moment."}
                   </p>
                 </div>
                 {view !== "graph" && (
@@ -519,7 +520,7 @@ export function Pulsepoint() {
                         <p>{current.intelligence.uncertainties.join(" ")}</p>
                       </section>}
                       {current.sources.length ? (
-                        <EvidenceList sources={current.sources} />
+                        <EvidenceList sources={current.sources} huddle={current} />
                       ) : (
                         <div className="empty-state">
                           <BookOpen size={28} />
@@ -580,20 +581,20 @@ export function Pulsepoint() {
                             <Check size={16} />
                             <p>
                               {current.expert.demo
-                                ? "A simulated expert is ready for this huddle."
+                                ? "Explore a simulated expert huddle; no real clinician is contacted."
                                 : "Request an expert perspective on this question."}
                             </p>
                           </div>
                           <button
                             className="button primary full"
                             onClick={requestExpert}
-                            disabled={busy}
+                            disabled={busy || (current.status === "ready" && current.expert.available === false)}
                           >
                             {busy ? (
                               <LoadingState label="Preparing request" />
                             ) : (
                               <>
-                                Request huddle <ArrowRight size={16} />
+                                {current.status === "ready" ? "Request Expert Connection" : "Continue Expert Huddle"} <ArrowRight size={16} />
                               </>
                             )}
                           </button>
@@ -607,7 +608,7 @@ export function Pulsepoint() {
                         <div className="empty-state">
                           <Users size={28} />
                           <h3>No expert match</h3>
-                          <p>There is no seeded expert for this question.</p>
+                          <p>No expert profile was supplied for this question. Review your context or continue reviewing the available evidence.</p>
                         </div>
                       )}
                     </aside>
@@ -644,7 +645,7 @@ export function Pulsepoint() {
                   </div>
                 )}
               {view === "brief" && current && (
-                <HuddleBrief key={current.id} huddle={current} />
+                <HuddleBrief key={current.id} huddle={current} busy={busy} onExpert={() => navigate("expert")} />
               )}
               {view === "graph" && <QuestionGraph huddles={huddles} onOpen={open} />}
             </>

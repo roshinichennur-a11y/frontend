@@ -175,3 +175,17 @@ html { scroll-padding-top: 90px; }
 .live-question-chart { margin-bottom: 28px; min-width: 0; }
 
 .live-question-chart .recharts-bar-rectangle path { fill: revert-layer; pointer-events: all; }
+/* Engagement actions reuse the existing palette and buttons. */
+.engagement-path { margin: 16px 0 24px; padding: 14px 18px; border-left: 3px solid #b84a62; background: #fff0f9; color: #4c243b; font-weight: 600; line-height: 1.8; }
+.next-best-action { background: #fff0f9; border-top: 3px solid #b84a62; }
+.next-best-action > h3 { font-size: 24px; margin: 8px 0 12px; color: #171017; }
+.next-action-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 0; border-top: 1px solid #d9bfd5; }
+.next-action-row h4 { font-size: 17px; margin-bottom: 8px; }
+.next-action-row p { margin: 8px 0; }
+.next-action-row .button { flex-shrink: 0; white-space: normal; text-align: center; }
+.next-best-action, #brief-sources { scroll-margin-top: 110px; }
+.source-relevance { margin: 12px 0; border-left: 2px solid #ac7b84; padding-left: 12px; }
+.source-relevance p { font-size: 12px; line-height: 1.6; }
+@media(max-width: 1000px) { .next-action-row { align-items: stretch; flex-direction: column; gap: 8px; } }
+@media print { .next-action-row .button, .brief-aside > a { display: none; } }
+.brief-action-jump { margin-top: 18px; }

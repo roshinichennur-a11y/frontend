@@ -21,7 +21,7 @@ test("session graph follows submitted, answered and reclassified questions", asy
   await page.getByLabel("Show unanswered only").check();
   await expect(detail.getByRole("heading", { level: 3 })).toHaveCount(1);
   await detail.getByRole("button", { name: "Open huddle" }).click();
-  await page.getByRole("button", { name: "Request huddle", exact: true }).click();
+  await page.getByRole("button", { name: "Request Expert Connection", exact: true }).click();
   await page.getByRole("button", { name: "Use simulated response" }).click();
   await page.getByRole("button", { name: "Create huddle brief" }).click();
   await graph();

@@ -9,7 +9,7 @@ test("context corrections, sections and evidence links", async ({ page }) => {
   await page.getByRole("button", { name: "Confirm context" }).click();
   await expect(page.getByRole("heading", { name: "Why this expert?" })).toBeVisible();
   await expect(page.getByText("MD — illustrative qualification", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Request huddle", exact: true }).click();
+  await page.getByRole("button", { name: "Request Expert Connection", exact: true }).click();
   await page.getByRole("button", { name: "Brief", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Your brief is not ready yet" })).toBeVisible();
   await page.getByRole("button", { name: "Evidence", exact: true }).click();

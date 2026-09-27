@@ -14,7 +14,7 @@ test("intelligence service and full huddle voice fallback", async ({ page, reque
   await page.getByRole("button", { name: "Start huddle", exact: true }).click();
   await page.getByRole("button", { name: "Confirm context" }).click();
   await expect(page.getByRole("heading", { name: "Evidence context", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Request huddle", exact: true }).click();
+  await page.getByRole("button", { name: "Request Expert Connection", exact: true }).click();
   await page.getByRole("button", { name: "Use simulated response" }).click();
   await page.getByRole("button", { name: "Create huddle brief" }).click();
   await page.getByRole("button", { name: "Play huddle", exact: true }).click();
@@ -33,7 +33,7 @@ test("service outage preserves the typed question and allows completion", async 
   await page.getByRole("button", { name: "Start huddle", exact: true }).click();
   await expect(page.getByText(/Local fallback: intelligence service unavailable/)).toBeVisible();
   await page.getByRole("button", { name: "Confirm context" }).click();
-  await page.getByRole("button", { name: "Request huddle", exact: true }).click();
+  await page.getByRole("button", { name: "Request Expert Connection", exact: true }).click();
   await page.getByRole("button", { name: "Use simulated response" }).click();
   await page.getByRole("button", { name: "Create huddle brief" }).click();
   await expect(page.getByRole("heading", { name: "Huddle Brief", exact: true })).toBeVisible();
