@@ -47,7 +47,8 @@ export const expert: Expert = {
   specialty: "Oncology",
   expertise: ["Breast cancer", "Treatment sequencing", "Clinical trials"],
   credentials: ["MD — illustrative qualification", "Medical oncology — illustrative specialty training", "Breast cancer evidence review — sample focus area"],
-  match: 94,
+  available: true,
+  match: 100,
   demo: true,
 };
 

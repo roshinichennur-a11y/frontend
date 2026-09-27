@@ -117,16 +117,19 @@ export function Pulsepoint() {
       [huddle, ...old.filter((h) => h.id !== huddle.id)].slice(0, 30),
     );
   }
-  function confirmContext(context: ClinicalQuestion) {
-    if (!current) return;
+  async function confirmContext(context: ClinicalQuestion) {
+    if (!current || busy) return;
     const changed = JSON.stringify(context) !== JSON.stringify(current.question);
-    if (changed) setResponseDrafts(old => ({ ...old, [current.id]: "" }));
-    const supported = /breast/i.test(context.condition) && /oncology/i.test(context.specialty);
-    save({ ...current, question: context,
-      ...(changed ? { response: null, brief: null, status: "ready" as const,
-        sources: current.demo && supported ? sources : [],
-        expert: current.demo && supported ? expert : null } : {}) });
-    setView("evidence");
+    if (!changed) { setView("evidence"); return; }
+    setBusy(true);
+    setError("");
+    try {
+      const updated = await huddleApi.confirm(current, context);
+      setResponseDrafts(old => ({ ...old, [current.id]: "" }));
+      save(updated);
+      setView("evidence");
+    } catch { setError("Context could not be saved. Please try again."); }
+    finally { setBusy(false); }
   }
   function newHuddle() {
     if (busy) return;
@@ -485,8 +488,9 @@ export function Pulsepoint() {
                 )}
               </div>
               {error && <ErrorState message={error} />}
+              {current?.intelligence?.notice && view !== "graph" && <p className="notice" role="status">{current.intelligence.notice}</p>}
               {view === "understanding" && current && (
-                <QuestionUnderstanding key={current.id + JSON.stringify(current.question)} huddle={current} onConfirm={confirmContext} />
+                <QuestionUnderstanding key={current.id + JSON.stringify(current.question)} huddle={current} busy={busy} onConfirm={confirmContext} />
               )}
               {view === "evidence" && current && (
                 <>
@@ -509,6 +513,11 @@ export function Pulsepoint() {
                             : "Retrieved sources"}
                         </span>
                       </div>
+                      {!!current.intelligence?.evidenceClaims.length && <section className="expert-details">
+                        <h3>Evidence context</h3>
+                        {current.intelligence.evidenceClaims.map((claim, index) => <div key={index}><p>{claim.text}</p><div className="inline-citations">{current.sources.filter(s => claim.source_ids.includes(s.id)).map(s => <a key={s.id} href={s.url} target="_blank" rel="noreferrer">{s.title}</a>)}</div></div>)}
+                        <p>{current.intelligence.uncertainties.join(" ")}</p>
+                      </section>}
                       {current.sources.length ? (
                         <EvidenceList sources={current.sources} />
                       ) : (
@@ -555,7 +564,7 @@ export function Pulsepoint() {
                               <span>%</span>
                             </strong>
                             <div>
-                              Expertise match
+                              Relevance match
                               <small>
                                 Relevance score, not medical certainty
                               </small>
@@ -684,7 +693,7 @@ export function Pulsepoint() {
           </li>
           <li>
             Expert profiles are fictional. The graph counts this session’s huddles, including starter samples. Sample briefs use
-            templates, not a live AI model.
+            templates when AI is unavailable. Optional AI uses only supplied evidence snippets.
           </li>
           <li>
             Source links point to public NCI resources. Summaries are

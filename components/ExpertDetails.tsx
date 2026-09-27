@@ -11,6 +11,7 @@ export function ExpertDetails({ huddle }: { huddle: Huddle }) {
       ? `${expert.specialty} matches the confirmed specialty.`
       : `Profile specialty: ${expert.specialty}. Review its relevance to ${huddle.question.specialty}.`}
       {matches.length ? ` Relevant profile interests: ${matches.join(", ")}.` : " No exact topic match is recorded; confirm suitability before relying on this match."}</p>
+    {huddle.intelligence?.routing.find(row => row.expertId === expert.id) && <p className="small">Routing score: {expert.match}/100. Specialty and condition contribute 35 points each, topic 20, and stated availability 10. Unknown availability earns no points. This measures relevance, not medical correctness.</p>}
     <h4>Credentials & experience</h4>
     {expert.credentials?.length ? <ul>{expert.credentials.map(item => <li key={item}>{item}</li>)}</ul>
       : <p>No verified credentials have been supplied.</p>}

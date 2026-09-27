@@ -11,6 +11,7 @@ import {
   Info,
 } from "lucide-react";
 import type { Huddle } from "@/types/huddle";
+import { buildVoiceBrief } from "@/lib/voiceBrief";
 import { ExpertDetails } from "./ExpertDetails";
 
 export function HuddleBrief({ huddle }: { huddle: Huddle }) {
@@ -25,6 +26,7 @@ export function HuddleBrief({ huddle }: { huddle: Huddle }) {
   if (!huddle.brief)
     return <section className="understanding-panel"><h2>Your brief is not ready yet</h2><p>Open Expert to add a response and create the brief. You can review Question and Evidence while you wait.</p></section>;
   const brief = huddle.brief;
+  const voiceScript = brief.voiceScript || buildVoiceBrief(huddle);
   const text = `PULSEPOINT — CLINICAL HUDDLE BRIEF\n${brief.synthesisLabel}\n\nQUESTION\n${huddle.question.question}\n\nEVIDENCE\n${brief.evidence.join("\n")}\n\nEXPERT PERSPECTIVE${huddle.expert?.demo ? " (FICTIONAL EXPERT)" : ""}\n${huddle.response}\n\nKEY TAKEAWAYS\n${brief.takeaways.map((t, i) => `• ${t}\n${huddle.sources.filter(s => brief.takeawaySourceIds?.[i]?.includes(s.id)).map(s => `${s.title}: ${s.url}`).join("\n")}`).join("\n")}\n\nUNCERTAINTY\n${brief.uncertainty}\n\nSOURCES\n${huddle.sources.map((s) => `${s.title}\n${s.url}`).join("\n\n")}`;
   async function copy() {
     try {
@@ -57,16 +59,22 @@ export function HuddleBrief({ huddle }: { huddle: Huddle }) {
       return;
     }
     const utterance = new SpeechSynthesisUtterance(
-      huddle.response || "No response available.",
+      voiceScript,
     );
-    utterance.rate = 0.94;
+    utterance.rate = 1.05;
     utterance.onend = () => setSpeaking(false);
     utterance.onerror = () => {
       setSpeaking(false);
       setNotice("Audio could not play. Read the response below.");
     };
-    window.speechSynthesis.speak(utterance);
-    setSpeaking(true);
+    try {
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
+      setSpeaking(true);
+    } catch {
+      setSpeaking(false);
+      setNotice("Audio could not play. Open Read voice briefing for the full narration.");
+    }
   }
   return (
     <div className="brief-layout">
@@ -90,8 +98,8 @@ export function HuddleBrief({ huddle }: { huddle: Huddle }) {
             <h3>What the evidence says</h3>
             <span className="tiny-tag">CURATED SOURCES</span>
           </div>
-          {brief.evidence.map((line) => (
-            <p key={line}>{line}</p>
+          {brief.evidence.map((line, index) => (
+            <div key={index}><p>{line}</p><div className="inline-citations">{huddle.sources.filter(source => brief.evidenceSourceIds?.[index]?.includes(source.id)).map(source => <a key={source.id} href={source.url} target="_blank" rel="noreferrer">{source.title}</a>)}</div></div>
           ))}
           <div className="inline-citations">
             {huddle.sources.map((s, i) => (
@@ -129,7 +137,7 @@ export function HuddleBrief({ huddle }: { huddle: Huddle }) {
           <div className="brief-section-heading">
             <h3>Key takeaways</h3>
             <span className="tiny-tag">
-              {huddle.demo ? "TEMPLATE SYNTHESIS" : "AI SYNTHESIS"}
+              {brief.synthesisLabel.startsWith("AI") ? "AI SYNTHESIS" : "TEMPLATE SYNTHESIS"}
             </span>
           </div>
           <ul>
@@ -141,6 +149,7 @@ export function HuddleBrief({ huddle }: { huddle: Huddle }) {
                   <div className="inline-citations" aria-label={`References for takeaway ${index + 1}`}>
                     {references.map(source => <a key={source.id} href={source.url} target="_blank" rel="noreferrer">{source.title}<ArrowUpRight size={12} /></a>)}
                   </div>
+                  {!!brief.grounding?.[index]?.supporting_quotes.length && <details><summary>See supporting excerpts</summary>{brief.grounding[index].supporting_quotes.map((item, i) => <blockquote key={i}>{item.quote}</blockquote>)}</details>}
                   <small>{references.length ? (huddle.demo ? "Suggested reading for this takeaway · not a verified clinical conclusion" : "Linked evidence") : "No supporting source linked to this takeaway."}</small>
                 </div>
               </li>;
@@ -191,15 +200,15 @@ export function HuddleBrief({ huddle }: { huddle: Huddle }) {
         </button>
         <div className="audio-card">
           <Headphones size={23} />
-          <h4>Listen to the perspective</h4>
+          <h4>Listen to your huddle</h4>
           <p>
-            Synthetic reading of the response. This is not a clinician’s
-            recording.
+            Synthetic voice briefing, approximately 45–60 seconds. Playback speed varies by device.
           </p>
           <button className="text-button" onClick={speak}>
             {speaking ? <Pause size={15} /> : <Headphones size={15} />}{" "}
-            {speaking ? "Stop playback" : "Play response"}
+            {speaking ? "Stop playback" : "Play huddle"}
           </button>
+          <details className="voice-transcript"><summary>Read voice briefing</summary><p>{voiceScript}</p></details>
         </div>
         {notice && (
           <p className="notice" role="status">
