@@ -70,7 +70,7 @@ export function EvidenceList({ sources, huddle }: { sources: Evidence[]; huddle?
             </h3>
             <p>{source.snippet}</p>
             {huddle && <div className="source-relevance">
-              <p><strong>Why shown:</strong> {huddle.intelligence?.evidenceClaims.some(claim => claim.source_ids.includes(source.id)) ? "Referenced in this huddle’s evidence context. Check the excerpt for applicability." : "Included in the supplied evidence set. Source-specific relevance has not been assessed."}</p>
+              <p><strong>Why shown:</strong> {source.relevance ? source.relevance.reason : huddle.intelligence?.evidenceClaims.some(claim => claim.source_ids.includes(source.id)) ? "Referenced in this huddle’s evidence context. Check the excerpt for applicability." : "Included in the supplied evidence set. Source-specific relevance has not been assessed."}</p>
               <p><strong>Question being explored:</strong> {huddle.question.question}</p>
             </div>}
             <div className="source-meta">
@@ -78,6 +78,8 @@ export function EvidenceList({ sources, huddle }: { sources: Evidence[]; huddle?
               {source.publisher}
               <span>·</span>
               {source.date}
+              {source.identifier && <span> · {source.identifier}</span>}
+              {source.publication && <span> · {source.publication}</span>}
             </div>
           </div>
         </article>

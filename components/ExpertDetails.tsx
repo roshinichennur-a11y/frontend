@@ -13,6 +13,7 @@ export function ExpertDetails({ huddle }: { huddle: Huddle }) {
       {matches.length ? ` Relevant profile interests: ${matches.join(", ")}.` : " No exact topic match is recorded; confirm suitability before relying on this match."}</p>
     {huddle.intelligence?.routing.find(row => row.expertId === expert.id) && <p className="small">Routing score: {expert.match}/100. Specialty and condition contribute 35 points each, topic 20, and stated availability 10. Unknown availability earns no points. This measures relevance, not medical correctness.</p>}
     <p className="small"><strong>{expert.demo ? "Sample availability:" : "Reported availability:"}</strong> {expert.available === true ? "Available according to the supplied profile; no appointment is confirmed." : expert.available === false ? "Not currently available." : "Not supplied; a request does not confirm availability."}</p>
+    {huddle.intelligence?.routing.find(row => row.expertId === expert.id)?.reason && <p className="small">{huddle.intelligence.routing.find(row => row.expertId === expert.id)!.reason}</p>}
     <h4>Credentials & experience</h4>
     {expert.credentials?.length ? <ul>{expert.credentials.map(item => <li key={item}>{item}</li>)}</ul>
       : <p>No verified credentials have been supplied.</p>}

@@ -35,6 +35,8 @@ import { QuestionUnderstanding } from "./QuestionUnderstanding";
 import { ExpertDetails } from "./ExpertDetails";
 import type { ClinicalQuestion } from "@/types/huddle";
 
+import { screenData } from "@/lib/privacy";
+
 const SESSION_KEY = "pulsepoint-demo-v1";
 const viewTitles: Record<View, string> = {
   home: "My Huddles",
@@ -66,7 +68,7 @@ export function Pulsepoint() {
     try {
       const saved = sessionStorage.getItem(SESSION_KEY);
       if (saved) {
-        const parsed = HuddleSchema.array().safeParse(JSON.parse(saved));
+        const parsed = HuddleSchema.array().safeParse(screenData(JSON.parse(saved)).value);
         if (parsed.success) setHuddles(parsed.data.filter((h) => h.demo).map(h => ({
           ...h,
           expert: h.expert?.id === expert.id ? { ...h.expert, credentials: expert.credentials } : h.expert,
@@ -91,7 +93,7 @@ export function Pulsepoint() {
       try {
         sessionStorage.setItem(
           SESSION_KEY,
-          JSON.stringify(huddles.filter((h) => h.demo).slice(0, 30)),
+          JSON.stringify(screenData(huddles.filter((h) => h.demo).slice(0, 30)).value),
         );
       } catch {
         /* The in-memory demo remains usable. */
@@ -112,6 +114,7 @@ export function Pulsepoint() {
     setView(next);
   }
   function save(huddle: Huddle) {
+    huddle = screenData(huddle).value;
     setCurrent(huddle);
     setHuddles((old) =>
       [huddle, ...old.filter((h) => h.id !== huddle.id)].slice(0, 30),
@@ -489,6 +492,7 @@ export function Pulsepoint() {
                 )}
               </div>
               {error && <ErrorState message={error} />}
+              {current?.privacy?.detected && view !== "graph" && <p className="notice" role="status">{current.privacy.notice}</p>}
               {current?.intelligence?.notice && view !== "graph" && <p className="notice" role="status">{current.intelligence.notice}</p>}
               {view === "understanding" && current && (
                 <QuestionUnderstanding key={current.id + JSON.stringify(current.question)} huddle={current} busy={busy} onConfirm={confirmContext} />

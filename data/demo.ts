@@ -1,3 +1,4 @@
+import { screenData, screenText } from "../lib/privacy";
 import type { Evidence, Expert, Huddle } from "../types/huddle";
 
 export const EXAMPLE_QUESTION =
@@ -53,7 +54,8 @@ export const expert: Expert = {
 };
 
 export function makeHuddle(question: string, id = "demo-huddle"): Huddle {
-  const supported = /breast/i.test(question);
+  question = screenText(question).value;
+  const supported = /breast\s+cancer/i.test(question);
   return {
     id,
     createdAt: new Date().toISOString(),
@@ -63,7 +65,7 @@ export function makeHuddle(question: string, id = "demo-huddle"): Huddle {
       question,
       specialty: supported ? "Oncology" : "Needs review",
       condition: supported ? "Breast cancer" : "Not classified",
-      topic: supported ? "Treatment sequencing" : "General question",
+      topic: supported && /sequenc/i.test(question) ? "Treatment sequencing" : "General question",
       intent: "Evidence review",
     },
     sources: supported ? sources : [],
@@ -74,6 +76,7 @@ export function makeHuddle(question: string, id = "demo-huddle"): Huddle {
 }
 
 export function completeHuddle(huddle: Huddle, response: string): Huddle {
+  ({ huddle, response } = screenData({ huddle, response }).value);
   return {
     ...huddle,
     status: "complete",

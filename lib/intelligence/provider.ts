@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { screenData } from "../privacy";
 
 export const SAFETY_PROMPT = `You prepare educational huddle context using synthetic/de-identified demonstration data only.
 Do not diagnose, prescribe, recommend a patient-specific treatment, or fabricate evidence or citations.
@@ -11,6 +12,7 @@ A clinician response is opinion, not independent evidence. Do not invent or upgr
 
 // Server-only by dependency boundary: only API routes import this module.
 export async function structured<T>(name: string, schema: z.ZodType<T>, instruction: string, data: unknown): Promise<T> {
+  if (screenData(data).detected) throw new Error("Possible identifiers: external AI blocked");
   if (typeof window !== "undefined") throw new Error("AI provider must run on the server.");
   if (process.env.PULSEPOINT_AI_ENABLED !== "true" || !process.env.OPENAI_API_KEY) throw new Error("Local mode");
   const controller = new AbortController();
@@ -30,6 +32,6 @@ export async function structured<T>(name: string, schema: z.ZodType<T>, instruct
     const content = (body.output || []).flatMap((item: { content?: { type: string; text?: string }[] }) => item.content || []);
     if (content.some((part: {type: string}) => part.type === "refusal")) throw new Error("AI declined request");
     const text = content.filter((part: {type: string}) => part.type === "output_text").map((part: {text: string}) => part.text).join("");
-    return schema.parse(JSON.parse(text));
+    return screenData(schema.parse(JSON.parse(text))).value;
   } finally { clearTimeout(timeout); }
 }

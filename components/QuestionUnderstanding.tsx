@@ -18,6 +18,11 @@ export function QuestionUnderstanding({ huddle, onConfirm, busy }: {
     <p className="small muted">{huddle.intelligence?.understanding === "ai" ? "AI-extracted context · confirm or correct the fields below" : "Local classification · confirm or correct the fields below"}</p>
     <blockquote>{huddle.question.question}</blockquote>
     {!!huddle.question.keywords?.length && <p className="small muted">Keywords: {huddle.question.keywords.join(", ")}</p>}
+    {huddle.intent_context && <details className="expert-details"><summary>Engagement intent and uncertainty</summary>
+      <p>Resource need: {huddle.intent_context.resource_need.length ? huddle.intent_context.resource_need.join(", ").replace(/_/g, " ") : "Not stated"}</p>
+      <p>Timing: {huddle.intent_context.urgency === "not_stated" ? "Not stated" : "Time-sensitive wording in the question; not clinical triage"}</p>
+      <p>{huddle.intent_context.uncertainties.join(" ")}</p>
+    </details>}
     <div className="extraction-grid">
       {fields.map(field => <label className="extraction-item" key={field}>
         <span className="field-label">{labels[field]}</span>

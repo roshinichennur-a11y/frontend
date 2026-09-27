@@ -89,6 +89,7 @@ export function HuddleBrief({ huddle, onExpert, busy }: { huddle: Huddle; onExpe
         <div className="brief-question">
           <span className="eyebrow">CLINICAL QUESTION</span>
           <h2>{huddle.question.question}</h2>
+          <p><strong>Intent:</strong> {huddle.question.intent} · <strong>Information needed:</strong> {huddle.question.topic}</p>
           <div className="flex flex-wrap gap-2">
             <span className="pill">{huddle.question.specialty}</span>
             <span className="pill">{huddle.question.topic}</span>
@@ -165,6 +166,8 @@ export function HuddleBrief({ huddle, onExpert, busy }: { huddle: Huddle; onExpe
             <p>{brief.uncertainty}</p>
           </div>
         </section>
+        {!!huddle.resources?.length && <section className="brief-section"><h3>Relevant resources</h3>{huddle.resources.map(resource => <p key={resource.id}><a href={resource.url} target="_blank" rel="noreferrer">{resource.title}</a> — {resource.description}{resource.demo ? " (sample resource)" : ""}</p>)}</section>}
+        {huddle.resources?.some(resource => resource.category === "patient_access") && <section className="brief-section"><h3>Patient-access considerations</h3>{huddle.resources.filter(resource => resource.category === "patient_access").map(resource => <p key={resource.id}>{resource.description} No eligibility, coverage, or enrollment is confirmed.</p>)}</section>}
         <NextBestAction huddle={huddle} onExpert={onExpert} busy={busy} />
         <section className="brief-section sources-section" id="brief-sources" tabIndex={-1}>
           <h3>Sources & references</h3>

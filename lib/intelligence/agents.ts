@@ -1,7 +1,9 @@
 import { z } from "zod";
-import type { ClinicalQuestion, Evidence, Expert, Huddle } from "../../types/huddle";
+import type { ClinicalQuestion, Evidence, Expert, Huddle, Resource } from "../../types/huddle";
 import { completeHuddle, expert, makeHuddle, sources } from "../../data/demo";
 import { structured } from "./provider";
+import { screenData, screenText, privacyStatus } from "../privacy";
+import { enrichHuddle, rankEvidence, extractIntent } from "./engagement";
 
 export const UnderstandingSchema = z.object({ specialty: z.string(), condition: z.string(), topic: z.string(), intent: z.string(), question: z.string(), keywords: z.array(z.string()) });
 export const ClaimSchema = z.object({ text: z.string(), source_ids: z.array(z.string()), supporting_quotes: z.array(z.object({ source_id: z.string(), quote: z.string() })) });
@@ -36,56 +38,73 @@ export function localUnderstanding(question: string): ClinicalQuestion {
     keywords: [...new Set(question.toLowerCase().match(/[a-z]{4,}/g) || [])].slice(0, 12) };
 }
 export async function understandQuestion(question: string, generate: Generator = structured) {
+  const privacy = privacyStatus(question);
+  question = screenText(question).value;
   try {
+    if (privacy.detected) throw new Error("Identifiers detected");
     const result = await generate("question_understanding", UnderstandingSchema, "Extract context without answering. Use Needs review or Not classified when unclear. Preserve the original question. Return at most 12 keywords.", { question });
     if ([result.specialty, result.condition, result.topic, result.intent].some(s => !s.trim() || s.length > 160)) throw new Error("Invalid context");
-    return { value: { ...result, question, keywords: result.keywords.slice(0, 12) }, mode: "ai" as const };
-  } catch { return { value: localUnderstanding(question), mode: "fallback" as const }; }
+    return { value: { ...result, question, keywords: result.keywords.slice(0, 12) }, intent_context: extractIntent({ ...result, question }), privacy, mode: "ai" as const };
+  } catch { return { value: localUnderstanding(question), intent_context: extractIntent(localUnderstanding(question)), privacy, mode: "fallback" as const }; }
 }
 
 export async function synthesizeEvidence(question: ClinicalQuestion, evidence: Evidence[], generate: Generator = structured) {
+  const screened = screenData({ question, evidence });
+  question = screened.value.question;
+  evidence = rankEvidence(question, screened.value.evidence);
   try {
+    if (screened.detected) throw new Error("Identifiers detected");
     if (!evidence.length) throw new Error("No evidence");
     const value = await generate("evidence_summary", EvidenceOutputSchema, "Summarize only the supplied snippets. Include source IDs and exact supporting quotes. If snippets only describe a resource, describe its scope; do not infer clinical findings. State missing evidence.", { question, evidence });
     validateClaims(value.evidence_summary, evidence);
     if (!value.uncertainties.length) throw new Error("Missing uncertainty");
-    return { value, mode: "ai" as const };
+    return { value, sources: evidence, mode: "ai" as const };
   } catch {
-    return { value: { evidence_summary: evidence.map(source => ({ text: source.snippet, source_ids: [source.id], supporting_quotes: [{ source_id: source.id, quote: source.snippet }] })), uncertainties: [evidence.length ? "These supplied snippets do not establish current treatment changes or patient-specific applicability." : "No evidence supplied for this question."] }, mode: "fallback" as const };
+    return { value: { evidence_summary: evidence.map(source => ({ text: source.snippet, source_ids: [source.id], supporting_quotes: [{ source_id: source.id, quote: source.snippet }] })), uncertainties: [evidence.length ? "These supplied snippets do not establish current treatment changes or patient-specific applicability." : "No evidence supplied for this question."] }, sources: evidence, mode: "fallback" as const };
   }
 }
 
 export function rankExperts(question: ClinicalQuestion, profiles: Expert[]) {
+  ({ question, profiles } = screenData({ question, profiles }).value);
   return profiles.map(profile => {
     const specialty_match = compact(profile.specialty) === compact(question.specialty) ? 1 : 0;
     const condition_match = profile.expertise.some(s => compact(s) === compact(question.condition)) ? 1 : 0;
     const topic_match = profile.expertise.some(s => compact(s) === compact(question.topic)) ? 1 : 0;
     const availability = profile.available === true ? 1 : 0;
     return { expert: profile, specialty_match, condition_match, topic_match, availability,
+      reason: `Supplied specialty: ${profile.specialty}. Condition overlap: ${condition_match ? question.condition : "none"}. Topic overlap: ${topic_match ? question.topic : "none"}. Availability: ${profile.available === true ? "stated available" : profile.available === false ? "stated unavailable" : "not supplied"}. Routing relevance only.`,
       match_score: specialty_match * 35 + condition_match * 35 + topic_match * 20 + availability * 10 };
   }).filter(row => row.specialty_match && row.condition_match).sort((a, b) => b.match_score - a.match_score || a.expert.id.localeCompare(b.expert.id));
 }
 
-export async function prepareContext(huddle: Huddle, context: ClinicalQuestion, evidence: Evidence[], profiles: Expert[], generate: Generator = structured): Promise<Huddle> {
+export async function prepareContext(huddle: Huddle, context: ClinicalQuestion, evidence: Evidence[], profiles: Expert[], generate: Generator = structured, resources: Resource[] = []): Promise<Huddle> {
+  const privacy = privacyStatus({ huddle, context, evidence, profiles, resources });
+  ({ huddle, context, evidence, profiles, resources } = screenData({ huddle, context, evidence, profiles, resources }).value);
+  evidence = rankEvidence(context, evidence);
   const summary = await synthesizeEvidence(context, evidence, generate);
   const ranked = rankExperts(context, profiles);
   const selected = ranked[0];
-  return { ...huddle, question: context, status: "ready", response: null, brief: null, sources: evidence,
+  return enrichHuddle({ ...huddle, privacy: huddle.privacy?.detected ? huddle.privacy : privacy, question: context, status: "ready", response: null, brief: null, sources: evidence,
+    experts: ranked.map(row => ({ ...row.expert, match: row.match_score })),
     expert: selected ? { ...selected.expert, match: selected.match_score } : null,
     intelligence: { understanding: huddle.intelligence?.understanding || "fallback", evidence: summary.mode,
       evidenceClaims: summary.value.evidence_summary, uncertainties: summary.value.uncertainties,
       routing: ranked.map(({ expert: profile, ...scores }) => ({ expertId: profile.id, ...scores })),
-      notice: summary.mode === "fallback" ? "Local fallback: supplied source descriptions, not an AI clinical assessment." : "AI summary of supplied snippets. Review citations and uncertainty." } };
+      notice: summary.mode === "fallback" ? "Local fallback: supplied source descriptions, not an AI clinical assessment." : "AI summary of supplied snippets. Review citations and uncertainty." } }, resources);
 }
-export const sampleContext = (question: ClinicalQuestion) => /breast/i.test(question.condition) && /oncology/i.test(question.specialty) ? sources : [];
-export async function createIntelligentHuddle(question: string, generate: Generator = structured): Promise<Huddle> {
+export const sampleContext = (question: ClinicalQuestion) => /breast\s+cancer/i.test(question.condition) && /oncology/i.test(question.specialty) ? sources : [];
+export async function createIntelligentHuddle(question: string, generate: Generator = structured, supplied: { sources?: Evidence[]; profiles?: Expert[]; resources?: Resource[] } = {}): Promise<Huddle> {
   const understood = await understandQuestion(question, generate);
-  const huddle = makeHuddle(question, `demo-${crypto.randomUUID()}`);
+  const huddle = makeHuddle(understood.value.question, `demo-${crypto.randomUUID()}`);
+  huddle.privacy = understood.privacy;
   huddle.intelligence = { understanding: understood.mode, evidence: "fallback", evidenceClaims: [], uncertainties: [], routing: [], notice: "" };
-  return prepareContext(huddle, understood.value, sampleContext(understood.value), [expert], generate);
+  return prepareContext(huddle, understood.value, supplied.sources ?? sampleContext(understood.value), supplied.profiles ?? [expert], generate, supplied.resources ?? []);
 }
 
 export async function synthesizeHuddle(huddle: Huddle, response: string, generate: Generator = structured): Promise<Huddle> {
+  const privacy = privacyStatus({ huddle, response });
+  ({ huddle, response } = screenData({ huddle, response }).value);
+  huddle = enrichHuddle({ ...huddle, privacy: huddle.privacy?.detected ? huddle.privacy : privacy });
   const fallback = completeHuddle(huddle, response);
   if (huddle.sources.length && (huddle.sources.length !== 3 || huddle.sources.some(source => !["nci-pdq", "nci-trials", "nci-breast"].includes(source.id)))) {
     fallback.brief = { evidence: huddle.sources.map(source => source.snippet), evidenceSourceIds: huddle.sources.map(source => [source.id]),
@@ -93,14 +112,15 @@ export async function synthesizeHuddle(huddle: Huddle, response: string, generat
       takeawaySourceIds: huddle.sources.map(source => [source.id]), uncertainty: "These supplied excerpts require source and clinical review. No independent validation or patient-specific assessment was performed.", synthesisLabel: "Template-based fallback · not clinical advice" };
   }
   try {
+    if (privacy.detected) throw new Error("Identifiers detected");
     if (!huddle.sources.length) throw new Error("No source-grounded synthesis available");
     const value = await generate("huddle_synthesis", SynthesisSchema, "Produce a concise educational brief. Expert response stays a separate opinion section. Use it to focus the takeaways, but cite only supplied evidence. Do not cite expert opinion as evidence. Include uncertainty. Return at most 5 takeaways.", { question: huddle.question, evidence: huddle.sources, expert_response: response });
     validateClaims(value.evidence_summary, huddle.sources);
     validateClaims(value.key_takeaways, huddle.sources);
     if (!value.key_takeaways.length || !value.uncertainties.length) throw new Error("Incomplete synthesis");
-    return { ...fallback, brief: { evidence: value.evidence_summary.map(c => c.text), evidenceSourceIds: value.evidence_summary.map(c => c.source_ids),
+    return enrichHuddle({ ...fallback, brief: { evidence: value.evidence_summary.map(c => c.text), evidenceSourceIds: value.evidence_summary.map(c => c.source_ids),
       takeaways: value.key_takeaways.map(c => c.text), takeawaySourceIds: value.key_takeaways.map(c => c.source_ids),
       uncertainty: value.uncertainties.join(" "), synthesisLabel: "AI synthesis of supplied evidence · expert opinion shown separately · not clinical advice",
-      grounding: value.key_takeaways, voiceScript: "" }, };
-  } catch { return { ...fallback, brief: { ...fallback.brief!, synthesisLabel: "Template-based fallback · not clinical advice" } }; }
+      grounding: value.key_takeaways, voiceScript: "" }, });
+  } catch { return enrichHuddle({ ...fallback, brief: { ...fallback.brief!, synthesisLabel: "Template-based fallback · not clinical advice" } }); }
 }
